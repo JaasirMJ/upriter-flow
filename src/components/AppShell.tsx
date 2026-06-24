@@ -116,7 +116,7 @@ export function AppShell({ children, title, subtitle }: { children: ReactNode; t
           <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">{title}</h1>
           {subtitle && <p className="text-muted-foreground mt-1 text-sm md:text-base">{subtitle}</p>}
         </header>
-        <div className="p-4 md:p-8">{children}</div>
+        <div className="p-4 md:p-8">{mounted ? children : null}</div>
       </main>
     </div>
   );
