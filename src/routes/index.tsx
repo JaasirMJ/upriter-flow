@@ -61,8 +61,9 @@ function Landing() {
           so patients wait at home, not in waiting rooms.
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
-          <Link to="/journey"><Button size="lg" className="gap-2">See your Smart Journey <ArrowRight className="size-4" /></Button></Link>
-          <Link to="/patient"><Button size="lg" variant="outline">Book an appointment</Button></Link>
+          <Link to="/onboarding"><Button size="lg" className="gap-2">Get started <ArrowRight className="size-4" /></Button></Link>
+          <Link to="/journey"><Button size="lg" variant="outline">See Smart Journey</Button></Link>
+          <Link to="/hospitals"><Button size="lg" variant="ghost">Browse hospitals</Button></Link>
         </div>
 
         {/* Hero stats */}
@@ -104,9 +105,13 @@ function Landing() {
         </div>
       </section>
 
-      <footer className="border-t border-border px-6 md:px-10 py-6 text-xs text-muted-foreground flex justify-between">
+      <footer className="border-t border-border px-6 md:px-10 py-6 text-xs text-muted-foreground flex justify-between flex-wrap gap-2">
         <div>© Upriter — Demo build</div>
-        <div>Built with Lovable</div>
+        <div className="flex gap-4">
+          <Link to="/privacy" className="hover:text-foreground">Privacy</Link>
+          <Link to="/terms" className="hover:text-foreground">Terms</Link>
+          <Link to="/security" className="hover:text-foreground">Security</Link>
+        </div>
       </footer>
     </div>
   );

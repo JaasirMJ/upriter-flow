@@ -116,11 +116,28 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-
   return (
     <QueryClientProvider client={queryClient}>
+      <OnboardingGate />
       <Outlet />
       <Toaster position="top-right" richColors closeButton />
     </QueryClientProvider>
   );
+}
+
+function OnboardingGate() {
+  const router = useRouter();
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("upriter.patient.profile.v1");
+      const hasProfile = raw && JSON.parse(raw)?.state?.profile;
+      const path = router.state.location.pathname;
+      const PUBLIC = ["/", "/onboarding", "/privacy", "/terms", "/security", "/first-aid"];
+      const needsProfile = !PUBLIC.includes(path) && !path.startsWith("/hospitals");
+      if (!hasProfile && needsProfile) {
+        router.navigate({ to: "/onboarding" });
+      }
+    } catch {}
+  }, [router.state.location.pathname]);
+  return null;
 }
