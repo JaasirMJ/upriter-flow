@@ -63,7 +63,7 @@ async function derivePasswordHash(password: string, saltB64?: string): Promise<{
     ["deriveBits"],
   );
   const bits = await crypto.subtle.deriveBits(
-    { name: "PBKDF2", salt: saltBytes, iterations: 100_000, hash: "SHA-256" },
+    { name: "PBKDF2", salt: saltBytes as BufferSource, iterations: 100_000, hash: "SHA-256" },
     key,
     256,
   );
