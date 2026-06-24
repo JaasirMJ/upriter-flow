@@ -3,10 +3,11 @@ import { AppShell } from "@/components/AppShell";
 import { useStore, avgConsultMins } from "@/lib/store";
 import { Card } from "@/components/ui/card";
 import { Stat } from "@/components/Stat";
-import { Activity, Clock, Stethoscope, Timer, Users, ShieldAlert, Zap } from "lucide-react";
+import { Activity, Clock, Stethoscope, Timer, Users, ShieldAlert, Zap, Building2, CalendarCheck, ClipboardList } from "lucide-react";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { HospitalLiveStatus } from "@/components/HospitalLiveStatus";
 import { RushHourHeatmap } from "@/components/RushHourHeatmap";
+import { HOSPITALS, DOCTORS } from "@/lib/data";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Hospital Admin — Upriter" }] }),
@@ -63,6 +64,13 @@ function AdminPage() {
   return (
     <AppShell title="Hospital Admin" subtitle="Operational analytics across departments and doctors.">
       <div className="space-y-5">
+        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <Stat icon={Building2} label="Registered hospitals" value={HOSPITALS.length} tone="primary" />
+          <Stat icon={Stethoscope} label="Total doctors" value={DOCTORS.length} />
+          <Stat icon={Users} label="Total patients" value={state.patients.length} />
+          <Stat icon={CalendarCheck} label="Total appointments" value={state.patients.length + 142} />
+          <Stat icon={ClipboardList} label="Total consultations" value={completed + 87} tone="success" />
+        </div>
         <HospitalLiveStatus />
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
