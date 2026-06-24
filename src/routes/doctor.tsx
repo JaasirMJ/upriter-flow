@@ -82,6 +82,10 @@ function ConsultationCard({ inProgress }: { inProgress?: any }) {
             {!inProgress.startedAt && (
               <Button onClick={startConsultation} className="gap-2"><Play className="size-4" />Start consultation</Button>
             )}
+            <PrescriptionDialog
+              patient={{ name: inProgress.name, phone: inProgress.phone, token: inProgress.token }}
+              trigger={<Button variant="outline" className="gap-2"><FileText className="size-4" /> Write prescription</Button>}
+            />
             <Button onClick={endConsultation} variant="default" className="gap-2"><CheckCircle2 className="size-4" />End & call next</Button>
           </div>
         </>
