@@ -245,8 +245,8 @@ export const useStore = create<State>()(
       get().pushNotification({ text: label, type: status === "available" ? "success" : "warning" });
     },
 
-    bookAppointment: ({ name, age, phone, appointmentTime, priority, symptoms, aiLabel }) => {
-      const p = get().addPatient({ name, age, phone, appointmentTime, priority, symptoms, aiLabel });
+    bookAppointment: (data) => {
+      const p = get().addPatient(data);
       set({ myTokenId: p.id });
       return p;
     },
@@ -256,6 +256,16 @@ export const useStore = create<State>()(
     setPatientPriority: (id, priority) => {
       set((s) => ({ patients: s.patients.map((p) => p.id === id ? { ...p, priority } : p) }));
       get().pushNotification({ text: `Priority updated to ${priority.toUpperCase()}`, type: priority === "critical" || priority === "high" ? "warning" : "info" });
+    },
+
+    setReviewStatus: (id, status) => {
+      set((s) => ({ patients: s.patients.map((p) => p.id === id ? { ...p, reviewStatus: status } : p) }));
+      const label =
+        status === "approved" ? "Priority approved by reception" :
+        status === "fast_track" ? "Patient assigned to fast track" :
+        status === "doctor_review" ? "Doctor review requested" :
+        status === "rejected" ? "AI recommendation rejected" : "Review pending";
+      get().pushNotification({ text: label, type: status === "rejected" ? "info" : "success" });
     },
 
     pushNotification: (n) => {
