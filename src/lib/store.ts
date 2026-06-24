@@ -166,7 +166,7 @@ export const useStore = create<State>()(
     travelTimeMins: 22,
     lastReadNotifAt: Date.now(),
 
-    addPatient: ({ name, age, phone, isWalkIn, appointmentTime, priority, symptoms, aiLabel }) => {
+    addPatient: ({ name, age, phone, isWalkIn, appointmentTime, priority, symptoms, aiLabel, riskLevel, riskLabels, suggestedDept, recommendation, confidence, estDurationMins, reviewStatus }) => {
       const token = get().nextTokenNumber;
       const p: Patient = {
         id: (typeof crypto !== "undefined" ? crypto.randomUUID() : String(Math.random())),
@@ -176,9 +176,14 @@ export const useStore = create<State>()(
         isWalkIn, appointmentTime,
         priority: priority ?? "regular",
         symptoms, aiLabel,
+        riskLevel, riskLabels, suggestedDept, recommendation, confidence, estDurationMins,
+        reviewStatus: reviewStatus ?? (riskLevel === "critical" || riskLevel === "high" ? "pending" : undefined),
       };
       set((s) => ({ patients: [...s.patients, p], nextTokenNumber: s.nextTokenNumber + 1 }));
-      get().pushNotification({ text: `Token #${token} issued for ${name}`, type: "success" });
+      get().pushNotification({ text: `Token #${token} issued for ${name}`, type: riskLevel === "critical" ? "warning" : "success" });
+      if (riskLevel === "critical" || riskLevel === "high") {
+        get().pushNotification({ text: `⚠ ${riskLevel === "critical" ? "Critical review" : "High-risk"} alert: ${name} — reception action needed`, type: "warning" });
+      }
       return p;
     },
 
