@@ -9,12 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ReceptionRouteImport } from './routes/reception'
 import { Route as PatientRouteImport } from './routes/patient'
 import { Route as DoctorRouteImport } from './routes/doctor'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ReceptionRoute = ReceptionRouteImport.update({
   id: '/reception',
   path: '/reception',
@@ -47,6 +53,7 @@ export interface FileRoutesByFullPath {
   '/doctor': typeof DoctorRoute
   '/patient': typeof PatientRoute
   '/reception': typeof ReceptionRoute
+  '/settings': typeof SettingsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -54,6 +61,7 @@ export interface FileRoutesByTo {
   '/doctor': typeof DoctorRoute
   '/patient': typeof PatientRoute
   '/reception': typeof ReceptionRoute
+  '/settings': typeof SettingsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -62,13 +70,27 @@ export interface FileRoutesById {
   '/doctor': typeof DoctorRoute
   '/patient': typeof PatientRoute
   '/reception': typeof ReceptionRoute
+  '/settings': typeof SettingsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/admin' | '/doctor' | '/patient' | '/reception'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/doctor'
+    | '/patient'
+    | '/reception'
+    | '/settings'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin' | '/doctor' | '/patient' | '/reception'
-  id: '__root__' | '/' | '/admin' | '/doctor' | '/patient' | '/reception'
+  to: '/' | '/admin' | '/doctor' | '/patient' | '/reception' | '/settings'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/doctor'
+    | '/patient'
+    | '/reception'
+    | '/settings'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -77,10 +99,18 @@ export interface RootRouteChildren {
   DoctorRoute: typeof DoctorRoute
   PatientRoute: typeof PatientRoute
   ReceptionRoute: typeof ReceptionRoute
+  SettingsRoute: typeof SettingsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reception': {
       id: '/reception'
       path: '/reception'
@@ -125,6 +155,7 @@ const rootRouteChildren: RootRouteChildren = {
   DoctorRoute: DoctorRoute,
   PatientRoute: PatientRoute,
   ReceptionRoute: ReceptionRoute,
+  SettingsRoute: SettingsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
