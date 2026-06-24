@@ -78,14 +78,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
+      { title: "UpriterMed" },
+      { name: "description", content: "Arrive when you're needed, not hours before. Less than 5 Minutes waiting time, sometimes ZERO waiting time!" },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { property: "og:title", content: "UpriterMed" },
+      { property: "og:description", content: "Arrive when you're needed, not hours before. Less than 5 Minutes waiting time, sometimes ZERO waiting time!" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "UpriterMed" },
+      { name: "twitter:description", content: "Arrive when you're needed, not hours before. Less than 5 Minutes waiting time, sometimes ZERO waiting time!" },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/CMPWX1MKtYMYgbTFkVgKXvZyRC03/social-images/social-1782333098061-ChatGPT_Image_Jun_24,_2026,_05_35_14_PM.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/CMPWX1MKtYMYgbTFkVgKXvZyRC03/social-images/social-1782333098061-ChatGPT_Image_Jun_24,_2026,_05_35_14_PM.webp" },
     ],
     links: [
       {
