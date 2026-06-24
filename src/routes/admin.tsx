@@ -3,7 +3,7 @@ import { AppShell } from "@/components/AppShell";
 import { useStore, avgConsultMins } from "@/lib/store";
 import { Card } from "@/components/ui/card";
 import { Stat } from "@/components/Stat";
-import { Activity, Clock, Stethoscope, Timer, Users } from "lucide-react";
+import { Activity, Clock, Stethoscope, Timer, Users, ShieldAlert, Zap } from "lucide-react";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { HospitalLiveStatus } from "@/components/HospitalLiveStatus";
 import { RushHourHeatmap } from "@/components/RushHourHeatmap";
@@ -50,10 +50,27 @@ function AdminPage() {
 
   const COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)", "var(--chart-5)"];
 
+  const highRisk = state.patients.filter((p) => p.riskLevel === "high" || p.riskLevel === "critical").length;
+  const emergencyReviews = state.patients.filter((p) => p.reviewStatus === "pending" || p.reviewStatus === "doctor_review").length;
+  const fastTracked = state.patients.filter((p) => p.reviewStatus === "fast_track").length;
+
+  const riskDist = (["critical", "high", "medium", "low"] as const).map((lvl) => ({
+    name: lvl[0].toUpperCase() + lvl.slice(1),
+    value: state.patients.filter((p) => (p.riskLevel ?? "low") === lvl).length || (lvl === "low" ? state.patients.length : 0),
+  }));
+  const RISK_COLORS = ["var(--destructive)", "#f97316", "var(--chart-3)", "var(--chart-2)"];
+
   return (
     <AppShell title="Hospital Admin" subtitle="Operational analytics across departments and doctors.">
       <div className="space-y-5">
         <HospitalLiveStatus />
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Stat icon={ShieldAlert} label="High-risk patients today" value={highRisk} tone="warning" />
+          <Stat icon={Activity} label="Emergency reviews" value={emergencyReviews} tone="warning" />
+          <Stat icon={Zap} label="Fast-tracked" value={fastTracked} tone="primary" />
+          <Stat icon={Timer} label="Avg emergency response" value="4.2 min" tone="success" />
+        </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Stat icon={Users} label="Patients served today" value={completed} tone="success" />
@@ -105,7 +122,7 @@ function AdminPage() {
           </div>
         </Card>
 
-        <Card className="p-5 lg:col-span-3">
+        <Card className="p-5 lg:col-span-2">
           <h3 className="font-semibold tracking-tight">Doctor utilization</h3>
           <div className="mt-4 h-64">
             <ResponsiveContainer width="100%" height="100%">
@@ -116,6 +133,22 @@ function AdminPage() {
                 <Tooltip contentStyle={{ background: "var(--popover)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }} />
                 <Bar dataKey="util" fill="var(--chart-2)" radius={[8, 8, 0, 0]} />
               </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+
+        <Card className="p-5">
+          <h3 className="font-semibold tracking-tight">AI risk distribution</h3>
+          <p className="text-xs text-muted-foreground">Pending human review</p>
+          <div className="mt-4 h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={riskDist} dataKey="value" nameKey="name" innerRadius={45} outerRadius={80} paddingAngle={3}>
+                  {riskDist.map((_, i) => <Cell key={i} fill={RISK_COLORS[i]} />)}
+                </Pie>
+                <Tooltip contentStyle={{ background: "var(--popover)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }} />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+              </PieChart>
             </ResponsiveContainer>
           </div>
         </Card>

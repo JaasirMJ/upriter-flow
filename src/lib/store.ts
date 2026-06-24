@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
+import type { RiskLevel, ReviewStatus } from "@/lib/risk";
 
 export type TokenStatus = "waiting" | "in_progress" | "completed" | "skipped" | "no_show";
 export type DoctorStatus = "available" | "late" | "break";
@@ -20,6 +21,14 @@ export interface Patient {
   priority?: Priority;
   symptoms?: string;
   aiLabel?: string;
+  // AI Risk Assessment (recommendation only)
+  riskLevel?: RiskLevel;
+  riskLabels?: string[];
+  suggestedDept?: string;
+  recommendation?: string;
+  confidence?: number;
+  estDurationMins?: number;
+  reviewStatus?: ReviewStatus;
 }
 
 export interface Doctor {
@@ -60,7 +69,7 @@ interface State {
 
   // actions
   addPatient: (
-    p: { name: string; age: number; phone: string; isWalkIn?: boolean; appointmentTime?: string; priority?: Priority; symptoms?: string; aiLabel?: string }
+    p: { name: string; age: number; phone: string; isWalkIn?: boolean; appointmentTime?: string; priority?: Priority; symptoms?: string; aiLabel?: string; riskLevel?: RiskLevel; riskLabels?: string[]; suggestedDept?: string; recommendation?: string; confidence?: number; estDurationMins?: number; reviewStatus?: ReviewStatus }
   ) => Patient;
   callNext: () => void;
   skipCurrent: () => void;
@@ -68,10 +77,11 @@ interface State {
   startConsultation: () => void;
   endConsultation: () => void;
   setDoctorStatus: (status: DoctorStatus, delayMins?: number) => void;
-  bookAppointment: (data: { name: string; age: number; phone: string; appointmentTime: string; priority?: Priority; symptoms?: string; aiLabel?: string }) => Patient;
+  bookAppointment: (data: { name: string; age: number; phone: string; appointmentTime: string; priority?: Priority; symptoms?: string; aiLabel?: string; riskLevel?: RiskLevel; riskLabels?: string[]; suggestedDept?: string; recommendation?: string; confidence?: number; estDurationMins?: number }) => Patient;
   pushNotification: (n: Omit<Notification, "id" | "time">) => void;
   markNotificationsRead: () => void;
   setPatientPriority: (id: string, priority: Priority) => void;
+  setReviewStatus: (id: string, status: ReviewStatus) => void;
   clearMyToken: () => void;
   reset: () => void;
 }
@@ -156,7 +166,7 @@ export const useStore = create<State>()(
     travelTimeMins: 22,
     lastReadNotifAt: Date.now(),
 
-    addPatient: ({ name, age, phone, isWalkIn, appointmentTime, priority, symptoms, aiLabel }) => {
+    addPatient: ({ name, age, phone, isWalkIn, appointmentTime, priority, symptoms, aiLabel, riskLevel, riskLabels, suggestedDept, recommendation, confidence, estDurationMins, reviewStatus }) => {
       const token = get().nextTokenNumber;
       const p: Patient = {
         id: (typeof crypto !== "undefined" ? crypto.randomUUID() : String(Math.random())),
@@ -166,9 +176,14 @@ export const useStore = create<State>()(
         isWalkIn, appointmentTime,
         priority: priority ?? "regular",
         symptoms, aiLabel,
+        riskLevel, riskLabels, suggestedDept, recommendation, confidence, estDurationMins,
+        reviewStatus: reviewStatus ?? (riskLevel === "critical" || riskLevel === "high" ? "pending" : undefined),
       };
       set((s) => ({ patients: [...s.patients, p], nextTokenNumber: s.nextTokenNumber + 1 }));
-      get().pushNotification({ text: `Token #${token} issued for ${name}`, type: "success" });
+      get().pushNotification({ text: `Token #${token} issued for ${name}`, type: riskLevel === "critical" ? "warning" : "success" });
+      if (riskLevel === "critical" || riskLevel === "high") {
+        get().pushNotification({ text: `⚠ ${riskLevel === "critical" ? "Critical review" : "High-risk"} alert: ${name} — reception action needed`, type: "warning" });
+      }
       return p;
     },
 
@@ -230,8 +245,8 @@ export const useStore = create<State>()(
       get().pushNotification({ text: label, type: status === "available" ? "success" : "warning" });
     },
 
-    bookAppointment: ({ name, age, phone, appointmentTime, priority, symptoms, aiLabel }) => {
-      const p = get().addPatient({ name, age, phone, appointmentTime, priority, symptoms, aiLabel });
+    bookAppointment: (data) => {
+      const p = get().addPatient(data);
       set({ myTokenId: p.id });
       return p;
     },
@@ -241,6 +256,16 @@ export const useStore = create<State>()(
     setPatientPriority: (id, priority) => {
       set((s) => ({ patients: s.patients.map((p) => p.id === id ? { ...p, priority } : p) }));
       get().pushNotification({ text: `Priority updated to ${priority.toUpperCase()}`, type: priority === "critical" || priority === "high" ? "warning" : "info" });
+    },
+
+    setReviewStatus: (id, status) => {
+      set((s) => ({ patients: s.patients.map((p) => p.id === id ? { ...p, reviewStatus: status } : p) }));
+      const label =
+        status === "approved" ? "Priority approved by reception" :
+        status === "fast_track" ? "Patient assigned to fast track" :
+        status === "doctor_review" ? "Doctor review requested" :
+        status === "rejected" ? "AI recommendation rejected" : "Review pending";
+      get().pushNotification({ text: label, type: status === "rejected" ? "info" : "success" });
     },
 
     pushNotification: (n) => {

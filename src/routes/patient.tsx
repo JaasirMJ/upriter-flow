@@ -12,9 +12,11 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { JourneyPlanner } from "@/components/JourneyPlanner";
 import { BookingSlots } from "@/components/BookingSlots";
-import { PriorityIntake, PriorityBadge } from "@/components/PriorityIntake";
+import { PriorityIntake, PriorityBadge, RiskBadge } from "@/components/PriorityIntake";
 import { PatientHistoryTimeline } from "@/components/PatientHistoryTimeline";
+import { EmergencyCard } from "@/components/EmergencyCard";
 import type { Priority } from "@/lib/store";
+import type { RiskAssessment } from "@/lib/risk";
 
 export const Route = createFileRoute("/patient")({
   head: () => ({
@@ -34,6 +36,7 @@ function PatientPage() {
     <AppShell title="Patient Dashboard" subtitle="Book, plan and arrive only when you're needed.">
       <div className="grid lg:grid-cols-3 gap-5">
         <div className="lg:col-span-2 space-y-5">
+          {myToken && <EmergencyCard patient={myToken} />}
           {myToken ? <LiveQueueCard /> : <BookFlow />}
           <JourneyPlanner />
           {!myToken && <BookingSlots onSelect={(t) => toast.message(`Slot ${t} selected — complete booking on the left.`)} />}
@@ -59,14 +62,23 @@ function BookFlow() {
   const [phone, setPhone] = useState("");
   const [priority, setPriority] = useState<Priority>("regular");
   const [symptoms, setSymptoms] = useState("");
-  const [aiLabel, setAiLabel] = useState<string | undefined>();
+  const [assessment, setAssessment] = useState<RiskAssessment | null>(null);
 
   const hospital = hospitals.find((h) => h.id === hospitalId)!;
 
   const book = () => {
     if (!name || !age || !phone) return toast.error("Fill in your details");
     const appt = new Date(`${date}T17:30:00`).toISOString();
-    const p = bookAppointment({ name, age: Number(age), phone, appointmentTime: appt, priority, symptoms, aiLabel });
+    const p = bookAppointment({
+      name, age: Number(age), phone, appointmentTime: appt, priority, symptoms,
+      aiLabel: assessment?.recommendation,
+      riskLevel: assessment?.riskLevel,
+      riskLabels: assessment?.labels,
+      suggestedDept: assessment?.suggestedDept,
+      recommendation: assessment?.recommendation,
+      confidence: assessment?.confidence,
+      estDurationMins: assessment?.estDurationMins,
+    });
     toast.success(`Booked! Your token is #${p.token}`);
   };
 
@@ -153,7 +165,7 @@ function BookFlow() {
 
       {step === 3 && (
         <div className="mt-6 space-y-3">
-          <PriorityIntake onAccept={(r) => { setPriority(r.priority); setAiLabel(r.label); setSymptoms(r.symptoms); setStep(4); }} />
+          <PriorityIntake age={age ? Number(age) : undefined} onAccept={(r) => { setPriority(r.priority); setAssessment(r.assessment); setSymptoms(r.symptoms); setStep(4); }} />
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setStep(2)}>Back</Button>
             <Button variant="ghost" onClick={() => setStep(4)} className="flex-1">Skip for now</Button>
@@ -163,13 +175,14 @@ function BookFlow() {
 
       {step === 4 && (
         <div className="mt-6 space-y-4">
-          {aiLabel && (
-            <div className="p-3 rounded-lg bg-accent/40 border border-border flex items-center justify-between">
+          {assessment && (
+            <div className="p-3 rounded-lg bg-accent/40 border border-border flex items-center justify-between gap-2 flex-wrap">
               <div>
-                <div className="text-xs text-muted-foreground">AI triage</div>
-                <div className="text-sm font-medium">{aiLabel}</div>
+                <div className="text-xs text-muted-foreground">AI risk assessment</div>
+                <div className="text-sm font-medium">{assessment.recommendation}</div>
+                <div className="text-[11px] text-muted-foreground mt-0.5">Suggested: {assessment.suggestedDept} · {assessment.confidence}% confidence</div>
               </div>
-              <PriorityBadge priority={priority} />
+              <RiskBadge level={assessment.riskLevel} />
             </div>
           )}
           <div className="grid sm:grid-cols-2 gap-3">

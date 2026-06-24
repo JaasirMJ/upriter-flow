@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { StatusBadge } from "@/routes/doctor";
 import { PriorityBadge } from "@/components/PriorityIntake";
 import { HospitalLiveStatus } from "@/components/HospitalLiveStatus";
+import { ReceptionEmergencyPanel } from "@/components/ReceptionEmergencyPanel";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
@@ -53,6 +54,7 @@ function ReceptionPage() {
     <AppShell title="Reception Dashboard" subtitle="Add patients, manage the queue, handle walk-ins.">
       <div className="space-y-5">
         <HospitalLiveStatus />
+        <ReceptionEmergencyPanel />
 
         <div className="grid lg:grid-cols-3 gap-5">
           <Card className="p-5 lg:col-span-1">

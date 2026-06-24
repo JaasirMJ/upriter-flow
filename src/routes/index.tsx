@@ -61,8 +61,8 @@ function Landing() {
           so patients wait at home, not in waiting rooms.
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
-          <Link to="/patient"><Button size="lg" className="gap-2">Try the patient app <ArrowRight className="size-4" /></Button></Link>
-          <Link to="/admin"><Button size="lg" variant="outline">See live dashboards</Button></Link>
+          <Link to="/journey"><Button size="lg" className="gap-2">See your Smart Journey <ArrowRight className="size-4" /></Button></Link>
+          <Link to="/patient"><Button size="lg" variant="outline">Book an appointment</Button></Link>
         </div>
 
         {/* Hero stats */}
