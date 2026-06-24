@@ -66,6 +66,10 @@ interface State {
   notifications: Notification[];
   lastReadNotifAt: number;
   travelTimeMins: number;
+  now: number;
+  liveSimulation: boolean;
+  tick: () => void;
+  toggleLiveSimulation: () => void;
 
   // actions
   addPatient: (
