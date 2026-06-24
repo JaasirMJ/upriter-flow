@@ -3,6 +3,7 @@ import { subscribeWithSelector } from "zustand/middleware";
 
 export type TokenStatus = "waiting" | "in_progress" | "completed" | "skipped" | "no_show";
 export type DoctorStatus = "available" | "late" | "break";
+export type Priority = "critical" | "high" | "regular" | "routine";
 
 export interface Patient {
   id: string;
@@ -16,6 +17,9 @@ export interface Patient {
   endedAt?: number;
   appointmentTime?: string;
   isWalkIn?: boolean;
+  priority?: Priority;
+  symptoms?: string;
+  aiLabel?: string;
 }
 
 export interface Doctor {
