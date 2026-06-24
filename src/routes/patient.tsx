@@ -36,6 +36,7 @@ function PatientPage() {
     <AppShell title="Patient Dashboard" subtitle="Book, plan and arrive only when you're needed.">
       <div className="grid lg:grid-cols-3 gap-5">
         <div className="lg:col-span-2 space-y-5">
+          {myToken && <EmergencyCard patient={myToken} />}
           {myToken ? <LiveQueueCard /> : <BookFlow />}
           <JourneyPlanner />
           {!myToken && <BookingSlots onSelect={(t) => toast.message(`Slot ${t} selected — complete booking on the left.`)} />}
