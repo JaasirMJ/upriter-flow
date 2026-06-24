@@ -417,6 +417,10 @@ export const useStore = create<State>()(
         consultationDurations: [10, 8, 12, 9, 11, 7, 13],
         notifications: [],
         doctors: seedDoctors,
+        auditLog: [{ id: "seed-audit", time: Date.now(), action: "Demo reset", actor: "system" }],
+        lockedTokens: [],
+        undoStack: [],
+        lastUpdatedAt: Date.now(),
       });
     },
   }))
