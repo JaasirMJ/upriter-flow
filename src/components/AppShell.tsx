@@ -1,7 +1,8 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Activity, LayoutDashboard, User, Stethoscope, ClipboardList, BarChart3, Moon, Sun, RotateCcw, Search, Settings, Command, MapPin, Building2, CalendarPlus, HeartPulse, FileText, History, ShieldCheck } from "lucide-react";
+import { Activity, LayoutDashboard, User, Stethoscope, ClipboardList, BarChart3, Moon, Sun, RotateCcw, Search, Settings, Command, MapPin, Building2, CalendarPlus, HeartPulse, FileText, History, Tv, Pill } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { useStore } from "@/lib/store";
+import { useAuth, currentUser, type Role } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { AICopilot } from "@/components/AICopilot";
@@ -9,23 +10,25 @@ import { CommandPalette } from "@/components/CommandPalette";
 import { NotificationCenter } from "@/components/NotificationCenter";
 import { ProfileMenu } from "@/components/ProfileMenu";
 
-const NAV_MAIN = [
-  { to: "/", label: "Home", icon: LayoutDashboard },
+interface NavItem { to: string; label: string; icon: any; roles?: Role[] }
+
+const NAV_PATIENT: NavItem[] = [
+  { to: "/patient", label: "Dashboard", icon: User },
   { to: "/journey", label: "Smart Journey", icon: MapPin },
-  { to: "/patient", label: "Patient", icon: User },
   { to: "/book", label: "Book", icon: CalendarPlus },
   { to: "/hospitals", label: "Hospitals", icon: Building2 },
-  { to: "/first-aid", label: "First Aid", icon: HeartPulse },
+  { to: "/prescriptions", label: "Prescriptions", icon: Pill },
   { to: "/reports", label: "Reports", icon: FileText },
   { to: "/history", label: "History", icon: History },
-] as const;
+  { to: "/first-aid", label: "First Aid", icon: HeartPulse },
+];
 
-const NAV_STAFF = [
-  { to: "/doctor", label: "Doctor", icon: Stethoscope },
-  { to: "/reception", label: "Reception", icon: ClipboardList },
-  { to: "/admin", label: "Admin", icon: BarChart3 },
-  { to: "/settings", label: "Settings", icon: Settings },
-] as const;
+const NAV_STAFF: NavItem[] = [
+  { to: "/doctor", label: "Doctor", icon: Stethoscope, roles: ["doctor", "admin"] },
+  { to: "/reception", label: "Reception", icon: ClipboardList, roles: ["reception", "admin"] },
+  { to: "/display", label: "TV Display", icon: Tv, roles: ["reception", "admin"] },
+  { to: "/admin", label: "Admin", icon: BarChart3, roles: ["admin"] },
+];
 
 export function AppShell({ children, title, subtitle }: { children: ReactNode; title: string; subtitle?: string }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
