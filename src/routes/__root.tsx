@@ -118,25 +118,48 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
-      <OnboardingGate />
+      <AuthGate />
       <Outlet />
       <Toaster position="top-right" richColors closeButton />
     </QueryClientProvider>
   );
 }
 
-function OnboardingGate() {
+function AuthGate() {
   const router = useRouter();
   useEffect(() => {
+    const path = router.state.location.pathname;
+    const PUBLIC = ["/", "/auth", "/privacy", "/terms", "/security", "/first-aid"];
+    if (PUBLIC.includes(path)) return;
+
     try {
-      const raw = localStorage.getItem("upriter.patient.profile.v1");
-      const hasProfile = raw && JSON.parse(raw)?.state?.profile;
-      const path = router.state.location.pathname;
-      const PUBLIC = ["/", "/onboarding", "/privacy", "/terms", "/security", "/first-aid"];
-      const needsProfile = !PUBLIC.includes(path) && !path.startsWith("/hospitals");
-      if (!hasProfile && needsProfile) {
-        router.navigate({ to: "/onboarding" });
+      const authRaw = localStorage.getItem("upriter.auth.v1");
+      const auth = authRaw ? JSON.parse(authRaw)?.state : null;
+      const me = auth?.accounts?.find((a: any) => a.id === auth?.currentId);
+
+      // Not signed in → send to auth portal
+      if (!me) {
+        router.navigate({ to: "/auth" });
+        return;
       }
+
+      // Patient signed in but profile incomplete → onboarding
+      if (me.role === "patient") {
+        const profRaw = localStorage.getItem("upriter.patient.profile.v1");
+        const hasProfile = profRaw && JSON.parse(profRaw)?.state?.profile;
+        if (!hasProfile && path !== "/onboarding") {
+          router.navigate({ to: "/onboarding" });
+          return;
+        }
+      }
+
+      // RBAC — redirect to user's home if route is not allowed
+      // Lazy import to avoid module cycles
+      import("@/lib/auth").then(({ canAccess, homeFor }) => {
+        if (!canAccess(me.role, path)) {
+          router.navigate({ to: homeFor(me.role) });
+        }
+      });
     } catch {}
   }, [router.state.location.pathname]);
   return null;

@@ -14,7 +14,9 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SecurityRouteImport } from './routes/security'
 import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as ReceptionRouteImport } from './routes/reception'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as PrescriptionsRouteImport } from './routes/prescriptions'
 import { Route as PatientRouteImport } from './routes/patient'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as JourneyRouteImport } from './routes/journey'
@@ -24,6 +26,7 @@ import { Route as FirstAidRouteImport } from './routes/first-aid'
 import { Route as DoctorRouteImport } from './routes/doctor'
 import { Route as DisplayRouteImport } from './routes/display'
 import { Route as BookRouteImport } from './routes/book'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as HospitalsHospitalIdRouteImport } from './routes/hospitals.$hospitalId'
@@ -54,9 +57,19 @@ const ReceptionRoute = ReceptionRouteImport.update({
   path: '/reception',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrescriptionsRoute = PrescriptionsRouteImport.update({
+  id: '/prescriptions',
+  path: '/prescriptions',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PatientRoute = PatientRouteImport.update({
@@ -104,6 +117,11 @@ const BookRoute = BookRouteImport.update({
   path: '/book',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -128,6 +146,7 @@ const DoctorsDoctorIdRoute = DoctorsDoctorIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/auth': typeof AuthRoute
   '/book': typeof BookRoute
   '/display': typeof DisplayRoute
   '/doctor': typeof DoctorRoute
@@ -137,7 +156,9 @@ export interface FileRoutesByFullPath {
   '/journey': typeof JourneyRoute
   '/onboarding': typeof OnboardingRoute
   '/patient': typeof PatientRoute
+  '/prescriptions': typeof PrescriptionsRoute
   '/privacy': typeof PrivacyRoute
+  '/profile': typeof ProfileRoute
   '/reception': typeof ReceptionRoute
   '/reports': typeof ReportsRoute
   '/security': typeof SecurityRoute
@@ -149,6 +170,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/auth': typeof AuthRoute
   '/book': typeof BookRoute
   '/display': typeof DisplayRoute
   '/doctor': typeof DoctorRoute
@@ -158,7 +180,9 @@ export interface FileRoutesByTo {
   '/journey': typeof JourneyRoute
   '/onboarding': typeof OnboardingRoute
   '/patient': typeof PatientRoute
+  '/prescriptions': typeof PrescriptionsRoute
   '/privacy': typeof PrivacyRoute
+  '/profile': typeof ProfileRoute
   '/reception': typeof ReceptionRoute
   '/reports': typeof ReportsRoute
   '/security': typeof SecurityRoute
@@ -171,6 +195,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/auth': typeof AuthRoute
   '/book': typeof BookRoute
   '/display': typeof DisplayRoute
   '/doctor': typeof DoctorRoute
@@ -180,7 +205,9 @@ export interface FileRoutesById {
   '/journey': typeof JourneyRoute
   '/onboarding': typeof OnboardingRoute
   '/patient': typeof PatientRoute
+  '/prescriptions': typeof PrescriptionsRoute
   '/privacy': typeof PrivacyRoute
+  '/profile': typeof ProfileRoute
   '/reception': typeof ReceptionRoute
   '/reports': typeof ReportsRoute
   '/security': typeof SecurityRoute
@@ -194,6 +221,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/auth'
     | '/book'
     | '/display'
     | '/doctor'
@@ -203,7 +231,9 @@ export interface FileRouteTypes {
     | '/journey'
     | '/onboarding'
     | '/patient'
+    | '/prescriptions'
     | '/privacy'
+    | '/profile'
     | '/reception'
     | '/reports'
     | '/security'
@@ -215,6 +245,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
+    | '/auth'
     | '/book'
     | '/display'
     | '/doctor'
@@ -224,7 +255,9 @@ export interface FileRouteTypes {
     | '/journey'
     | '/onboarding'
     | '/patient'
+    | '/prescriptions'
     | '/privacy'
+    | '/profile'
     | '/reception'
     | '/reports'
     | '/security'
@@ -236,6 +269,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/auth'
     | '/book'
     | '/display'
     | '/doctor'
@@ -245,7 +279,9 @@ export interface FileRouteTypes {
     | '/journey'
     | '/onboarding'
     | '/patient'
+    | '/prescriptions'
     | '/privacy'
+    | '/profile'
     | '/reception'
     | '/reports'
     | '/security'
@@ -258,6 +294,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  AuthRoute: typeof AuthRoute
   BookRoute: typeof BookRoute
   DisplayRoute: typeof DisplayRoute
   DoctorRoute: typeof DoctorRoute
@@ -267,7 +304,9 @@ export interface RootRouteChildren {
   JourneyRoute: typeof JourneyRoute
   OnboardingRoute: typeof OnboardingRoute
   PatientRoute: typeof PatientRoute
+  PrescriptionsRoute: typeof PrescriptionsRoute
   PrivacyRoute: typeof PrivacyRoute
+  ProfileRoute: typeof ProfileRoute
   ReceptionRoute: typeof ReceptionRoute
   ReportsRoute: typeof ReportsRoute
   SecurityRoute: typeof SecurityRoute
@@ -313,11 +352,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReceptionRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/privacy': {
       id: '/privacy'
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/prescriptions': {
+      id: '/prescriptions'
+      path: '/prescriptions'
+      fullPath: '/prescriptions'
+      preLoaderRoute: typeof PrescriptionsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/patient': {
@@ -383,6 +436,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -429,6 +489,7 @@ const HospitalsRouteWithChildren = HospitalsRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  AuthRoute: AuthRoute,
   BookRoute: BookRoute,
   DisplayRoute: DisplayRoute,
   DoctorRoute: DoctorRoute,
@@ -438,7 +499,9 @@ const rootRouteChildren: RootRouteChildren = {
   JourneyRoute: JourneyRoute,
   OnboardingRoute: OnboardingRoute,
   PatientRoute: PatientRoute,
+  PrescriptionsRoute: PrescriptionsRoute,
   PrivacyRoute: PrivacyRoute,
+  ProfileRoute: ProfileRoute,
   ReceptionRoute: ReceptionRoute,
   ReportsRoute: ReportsRoute,
   SecurityRoute: SecurityRoute,

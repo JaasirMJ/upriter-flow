@@ -1,7 +1,8 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Activity, LayoutDashboard, User, Stethoscope, ClipboardList, BarChart3, Moon, Sun, RotateCcw, Search, Settings, Command, MapPin, Building2, CalendarPlus, HeartPulse, FileText, History, ShieldCheck } from "lucide-react";
+import { Activity, LayoutDashboard, User, Stethoscope, ClipboardList, BarChart3, Moon, Sun, RotateCcw, Search, Settings, Command, MapPin, Building2, CalendarPlus, HeartPulse, FileText, History, Tv, Pill } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { useStore } from "@/lib/store";
+import { useAuth, currentUser, type Role } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { AICopilot } from "@/components/AICopilot";
@@ -9,30 +10,39 @@ import { CommandPalette } from "@/components/CommandPalette";
 import { NotificationCenter } from "@/components/NotificationCenter";
 import { ProfileMenu } from "@/components/ProfileMenu";
 
-const NAV_MAIN = [
-  { to: "/", label: "Home", icon: LayoutDashboard },
+interface NavItem { to: string; label: string; icon: any; roles?: Role[] }
+
+const NAV_PATIENT: NavItem[] = [
+  { to: "/patient", label: "Dashboard", icon: User },
   { to: "/journey", label: "Smart Journey", icon: MapPin },
-  { to: "/patient", label: "Patient", icon: User },
   { to: "/book", label: "Book", icon: CalendarPlus },
   { to: "/hospitals", label: "Hospitals", icon: Building2 },
-  { to: "/first-aid", label: "First Aid", icon: HeartPulse },
+  { to: "/prescriptions", label: "Prescriptions", icon: Pill },
   { to: "/reports", label: "Reports", icon: FileText },
   { to: "/history", label: "History", icon: History },
-] as const;
+  { to: "/first-aid", label: "First Aid", icon: HeartPulse },
+];
 
-const NAV_STAFF = [
-  { to: "/doctor", label: "Doctor", icon: Stethoscope },
-  { to: "/reception", label: "Reception", icon: ClipboardList },
-  { to: "/admin", label: "Admin", icon: BarChart3 },
-  { to: "/settings", label: "Settings", icon: Settings },
-] as const;
+const NAV_STAFF: NavItem[] = [
+  { to: "/doctor", label: "Doctor", icon: Stethoscope, roles: ["doctor", "admin"] },
+  { to: "/reception", label: "Reception", icon: ClipboardList, roles: ["reception", "admin"] },
+  { to: "/display", label: "TV Display", icon: Tv, roles: ["reception", "admin"] },
+  { to: "/admin", label: "Admin", icon: BarChart3, roles: ["admin"] },
+];
 
 export function AppShell({ children, title, subtitle }: { children: ReactNode; title: string; subtitle?: string }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [dark, setDark] = useState(false);
   const [mounted, setMounted] = useState(false);
   const reset = useStore((s) => s.reset);
+  const me = useAuth((s) => currentUser(s));
   useEffect(() => { setMounted(true); }, []);
+
+  const role: Role = me?.role ?? "patient";
+  const isPatient = role === "patient";
+  const navMain: NavItem[] = isPatient ? NAV_PATIENT : NAV_STAFF.filter((i) => !i.roles || i.roles.includes(role));
+  const navMore: NavItem[] = isPatient ? [] : (role === "admin" ? NAV_PATIENT : []);
+  const allNav = [...navMain, ...navMore];
 
   useEffect(() => {
     const saved = localStorage.getItem("upriter-theme");
@@ -73,9 +83,9 @@ export function AppShell({ children, title, subtitle }: { children: ReactNode; t
           <kbd className="text-[10px] px-1.5 py-0.5 rounded bg-muted border border-border">⌘K</kbd>
         </button>
 
-        <div className="text-[10px] uppercase tracking-wider text-muted-foreground/70 px-3 pb-1">Patient</div>
+        <div className="text-[10px] uppercase tracking-wider text-muted-foreground/70 px-3 pb-1">{isPatient ? "Patient" : "Staff"}</div>
         <nav className="flex flex-col gap-0.5">
-          {NAV_MAIN.map(({ to, label, icon: Icon }: { to: string; label: string; icon: any }) => {
+          {navMain.map(({ to, label, icon: Icon }) => {
             const active = pathname === to;
             return (
               <Link
@@ -94,27 +104,29 @@ export function AppShell({ children, title, subtitle }: { children: ReactNode; t
             );
           })}
         </nav>
-        <div className="text-[10px] uppercase tracking-wider text-muted-foreground/70 px-3 pt-3 pb-1">Staff</div>
-        <nav className="flex flex-col gap-0.5">
-          {NAV_STAFF.map(({ to, label, icon: Icon }: { to: string; label: string; icon: any }) => {
-            const active = pathname === to;
-            return (
-              <Link
-                key={to}
-                to={to}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all",
-                  active
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-soft"
-                    : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
-                )}
-              >
-                <Icon className="size-4" />
-                {label}
-              </Link>
-            );
-          })}
-        </nav>
+        {navMore.length > 0 && (
+          <>
+            <div className="text-[10px] uppercase tracking-wider text-muted-foreground/70 px-3 pt-3 pb-1">Patient view</div>
+            <nav className="flex flex-col gap-0.5">
+              {navMore.map(({ to, label, icon: Icon }) => {
+                const active = pathname === to;
+                return (
+                  <Link key={to} to={to} className={cn(
+                    "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all",
+                    active ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-soft" : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+                  )}>
+                    <Icon className="size-4" />
+                    {label}
+                  </Link>
+                );
+              })}
+            </nav>
+          </>
+        )}
+        <Link to="/settings" className={cn("mt-2 flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all",
+          pathname === "/settings" ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" : "text-muted-foreground hover:bg-sidebar-accent/50")}>
+          <Settings className="size-4" /> Settings
+        </Link>
 
         <div className="mt-auto flex flex-col gap-1 pt-4 border-t border-border">
           <Button variant="ghost" size="sm" onClick={reset} className="justify-start gap-2 h-8">
@@ -158,7 +170,7 @@ export function AppShell({ children, title, subtitle }: { children: ReactNode; t
 
         {/* Mobile nav */}
         <div className="md:hidden flex gap-1 px-3 py-2 overflow-x-auto border-b border-border bg-sidebar">
-          {[...NAV_MAIN, ...NAV_STAFF].map(({ to, label, icon: Icon }: { to: string; label: string; icon: any }) => {
+          {allNav.map(({ to, label, icon: Icon }) => {
             const active = pathname === to;
             return (
               <Link

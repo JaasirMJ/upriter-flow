@@ -4,7 +4,8 @@ import { useStore, activeDoctor, avgConsultMins } from "@/lib/store";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Coffee, Pause, Play, Stethoscope, Timer, CheckCircle2, AlertCircle, Activity } from "lucide-react";
+import { Coffee, Pause, Play, Stethoscope, Timer, CheckCircle2, AlertCircle, Activity, FileText } from "lucide-react";
+import { PrescriptionDialog } from "@/components/PrescriptionDialog";
 import { Stat } from "@/components/Stat";
 import { DoctorPerformance } from "@/components/DoctorPerformance";
 import { useEffect, useState } from "react";
@@ -82,6 +83,10 @@ function ConsultationCard({ inProgress }: { inProgress?: any }) {
             {!inProgress.startedAt && (
               <Button onClick={startConsultation} className="gap-2"><Play className="size-4" />Start consultation</Button>
             )}
+            <PrescriptionDialog
+              patient={{ name: inProgress.name, phone: inProgress.phone, token: inProgress.token }}
+              trigger={<Button variant="outline" className="gap-2"><FileText className="size-4" /> Write prescription</Button>}
+            />
             <Button onClick={endConsultation} variant="default" className="gap-2"><CheckCircle2 className="size-4" />End & call next</Button>
           </div>
         </>
