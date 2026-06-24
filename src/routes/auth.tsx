@@ -185,26 +185,25 @@ function AuthPage() {
                   <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} className="rounded" />
                   Remember me
                 </label>
-                <button type="button" onClick={() => setMode("forgot")} className="text-primary hover:underline">Forgot password?</button>
               </div>
             )}
 
-            <Button type="submit" className="w-full gap-2 h-10 mt-2">
-              {mode === "login" ? "Sign in" : mode === "signup" ? "Create account" : "Reset password"} <ArrowRight className="size-4" />
+            <Button type="submit" disabled={busy} className="w-full gap-2 h-10 mt-2">
+              {busy ? "Please wait…" : mode === "login" ? "Sign in" : "Create account"} <ArrowRight className="size-4" />
             </Button>
           </form>
 
           <div className="mt-6 text-center text-sm text-muted-foreground">
-            {mode === "login" && (
+            {mode === "login" ? (
               <>Don't have an account? <button onClick={() => setMode("signup")} className="text-primary hover:underline">Sign up</button></>
-            )}
-            {mode === "signup" && (
+            ) : (
               <>Already have an account? <button onClick={() => setMode("login")} className="text-primary hover:underline">Sign in</button></>
             )}
-            {mode === "forgot" && (
-              <button onClick={() => setMode("login")} className="text-primary hover:underline">Back to sign in</button>
-            )}
           </div>
+          <p className="mt-3 text-[10px] text-center text-muted-foreground">
+            Forgot your password? Account recovery requires a backend identity provider, which isn't enabled in this demo build.
+          </p>
+
 
           <p className="mt-8 text-[10px] text-center text-muted-foreground">
             By continuing you agree to our <Link to="/terms" className="underline">terms</Link> and <Link to="/privacy" className="underline">privacy policy</Link>.
