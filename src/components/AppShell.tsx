@@ -35,7 +35,14 @@ export function AppShell({ children, title, subtitle }: { children: ReactNode; t
   const [dark, setDark] = useState(false);
   const [mounted, setMounted] = useState(false);
   const reset = useStore((s) => s.reset);
+  const me = useAuth((s) => currentUser(s));
   useEffect(() => { setMounted(true); }, []);
+
+  const role: Role = me?.role ?? "patient";
+  const isPatient = role === "patient";
+  const navMain: NavItem[] = isPatient ? NAV_PATIENT : NAV_STAFF.filter((i) => !i.roles || i.roles.includes(role));
+  const navMore: NavItem[] = isPatient ? [] : (role === "admin" ? NAV_PATIENT : []);
+  const allNav = [...navMain, ...navMore];
 
   useEffect(() => {
     const saved = localStorage.getItem("upriter-theme");
