@@ -15,6 +15,8 @@ import { BookingSlots } from "@/components/BookingSlots";
 import { PriorityIntake, PriorityBadge, RiskBadge } from "@/components/PriorityIntake";
 import { PatientHistoryTimeline } from "@/components/PatientHistoryTimeline";
 import { EmergencyCard } from "@/components/EmergencyCard";
+import { HealthSummary } from "@/components/HealthSummary";
+import { NearbyHospitals } from "@/components/NearbyHospitals";
 import type { Priority } from "@/lib/store";
 import type { RiskAssessment } from "@/lib/risk";
 
@@ -34,16 +36,20 @@ function PatientPage() {
 
   return (
     <AppShell title="Patient Dashboard" subtitle="Book, plan and arrive only when you're needed.">
-      <div className="grid lg:grid-cols-3 gap-5">
-        <div className="lg:col-span-2 space-y-5">
-          {myToken && <EmergencyCard patient={myToken} />}
-          {myToken ? <LiveQueueCard /> : <BookFlow />}
-          <JourneyPlanner />
-          {!myToken && <BookingSlots onSelect={(t) => toast.message(`Slot ${t} selected — complete booking on the left.`)} />}
-        </div>
-        <div className="space-y-5">
-          <DoctorCard />
-          <PatientHistoryTimeline />
+      <div className="space-y-5">
+        <HealthSummary />
+        <div className="grid lg:grid-cols-3 gap-5">
+          <div className="lg:col-span-2 space-y-5">
+            {myToken && <EmergencyCard patient={myToken} />}
+            {myToken ? <LiveQueueCard /> : <BookFlow />}
+            <JourneyPlanner />
+            {!myToken && <BookingSlots onSelect={(t) => toast.message(`Slot ${t} selected — complete booking on the left.`)} />}
+          </div>
+          <div className="space-y-5">
+            <DoctorCard />
+            <NearbyHospitals />
+            <PatientHistoryTimeline />
+          </div>
         </div>
       </div>
     </AppShell>
