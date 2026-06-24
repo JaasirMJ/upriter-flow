@@ -169,6 +169,29 @@ export const useStore = create<State>()(
     ],
     travelTimeMins: 22,
     lastReadNotifAt: Date.now(),
+    now: Date.now(),
+    liveSimulation: true,
+
+    tick: () => {
+      const s = get();
+      const newNow = Date.now();
+      // Auto-progress queue: when current consult exceeds avg duration and doctor is available
+      if (s.liveSimulation) {
+        const current = s.patients.find((p) => p.status === "in_progress");
+        const doc = s.doctors.find((d) => d.id === s.activeDoctorId);
+        if (current?.startedAt && doc?.status === "available") {
+          const avg = avgConsultMins(s);
+          const elapsedMins = (newNow - current.startedAt) / 60000;
+          // Advance when consultation reasonably done (random jitter for realism)
+          if (elapsedMins >= Math.max(2, avg * 0.6 + Math.random() * 2)) {
+            get().callNext();
+          }
+        }
+      }
+      set({ now: newNow });
+    },
+
+    toggleLiveSimulation: () => set((s) => ({ liveSimulation: !s.liveSimulation })),
 
     addPatient: ({ name, age, phone, isWalkIn, appointmentTime, priority, symptoms, aiLabel, riskLevel, riskLabels, suggestedDept, recommendation, confidence, estDurationMins, reviewStatus }) => {
       const token = get().nextTokenNumber;
