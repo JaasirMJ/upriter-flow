@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { persist, subscribeWithSelector } from "zustand/middleware";
+import { subscribeWithSelector } from "zustand/middleware";
 
 export type TokenStatus = "waiting" | "in_progress" | "completed" | "skipped" | "no_show";
 export type DoctorStatus = "available" | "late" | "break";
@@ -134,156 +134,122 @@ function buildSeedPatients(): { patients: Patient[]; currentToken: number; nextT
 const seed = buildSeedPatients();
 
 export const useStore = create<State>()(
-  subscribeWithSelector(
-    persist(
-      (set, get) => ({
-        hospitals: seedHospitals,
-        doctors: seedDoctors,
-        activeDoctorId: "d1",
-        patients: seed.patients,
-        currentToken: seed.currentToken,
-        nextTokenNumber: seed.nextTokenNumber,
+  subscribeWithSelector((set, get) => ({
+    hospitals: seedHospitals,
+    doctors: seedDoctors,
+    activeDoctorId: "d1",
+    patients: seed.patients,
+    currentToken: seed.currentToken,
+    nextTokenNumber: seed.nextTokenNumber,
+    myTokenId: null,
+    consultationDurations: [10, 8, 12, 9, 11, 7, 13],
+    notifications: [
+      { id: "seed-notif", text: "Welcome to Upriter — your queue is live.", type: "info", time: Date.now() - 60000 },
+    ],
+    travelTimeMins: 22,
+
+    addPatient: ({ name, age, phone, isWalkIn, appointmentTime }) => {
+      const token = get().nextTokenNumber;
+      const p: Patient = {
+        id: (typeof crypto !== "undefined" ? crypto.randomUUID() : String(Math.random())),
+        token, name, age, phone,
+        status: "waiting",
+        createdAt: Date.now(),
+        isWalkIn, appointmentTime,
+      };
+      set((s) => ({ patients: [...s.patients, p], nextTokenNumber: s.nextTokenNumber + 1 }));
+      get().pushNotification({ text: `Token #${token} issued for ${name}`, type: "success" });
+      return p;
+    },
+
+    callNext: () => {
+      const s = get();
+      let patients = s.patients.map((p) =>
+        p.status === "in_progress" ? { ...p, status: "completed" as TokenStatus, endedAt: Date.now() } : p
+      );
+      const completed = s.patients.find((p) => p.status === "in_progress");
+      let durations = s.consultationDurations;
+      if (completed && completed.startedAt) {
+        const d = Math.max(3, Math.round((Date.now() - completed.startedAt) / 60000));
+        durations = [...durations, d].slice(-30);
+      }
+      const next = [...patients].filter((p) => p.status === "waiting").sort((a, b) => a.token - b.token)[0];
+      if (next) {
+        patients = patients.map((p) => p.id === next.id ? { ...p, status: "in_progress", startedAt: Date.now() } : p);
+        set({ patients, currentToken: next.token, consultationDurations: durations });
+        get().pushNotification({ text: `Now serving token #${next.token} — ${next.name}`, type: "info" });
+      } else {
+        set({ patients, consultationDurations: durations });
+      }
+    },
+
+    skipCurrent: () => {
+      set((s) => ({
+        patients: s.patients.map((p) => p.status === "in_progress" ? { ...p, status: "skipped" as TokenStatus } : p),
+      }));
+      get().pushNotification({ text: "Token skipped — will be recalled later.", type: "warning" });
+      get().callNext();
+    },
+
+    markNoShow: () => {
+      set((s) => ({
+        patients: s.patients.map((p) => p.status === "in_progress" ? { ...p, status: "no_show" as TokenStatus } : p),
+      }));
+      get().pushNotification({ text: "Marked as No-Show.", type: "warning" });
+      get().callNext();
+    },
+
+    startConsultation: () => {
+      set((s) => ({
+        patients: s.patients.map((p) =>
+          p.status === "in_progress" && !p.startedAt ? { ...p, startedAt: Date.now() } : p
+        ),
+      }));
+    },
+
+    endConsultation: () => { get().callNext(); },
+
+    setDoctorStatus: (status, delayMins = 0) => {
+      set((s) => ({
+        doctors: s.doctors.map((d) => d.id === s.activeDoctorId ? { ...d, status, delayMins } : d),
+      }));
+      const label =
+        status === "late" ? `Doctor running late (+${delayMins} mins)` :
+        status === "break" ? "Doctor on a short break" :
+        "Doctor available — queue resumed";
+      get().pushNotification({ text: label, type: status === "available" ? "success" : "warning" });
+    },
+
+    bookAppointment: ({ name, age, phone, appointmentTime }) => {
+      const p = get().addPatient({ name, age, phone, appointmentTime });
+      set({ myTokenId: p.id });
+      return p;
+    },
+
+    pushNotification: (n) => {
+      set((s) => ({
+        notifications: [
+          { ...n, id: (typeof crypto !== "undefined" ? crypto.randomUUID() : String(Math.random())), time: Date.now() },
+          ...s.notifications,
+        ].slice(0, 30),
+      }));
+    },
+
+    clearMyToken: () => set({ myTokenId: null }),
+
+    reset: () => {
+      const s = buildSeedPatients();
+      set({
+        patients: s.patients,
+        currentToken: s.currentToken,
+        nextTokenNumber: s.nextTokenNumber,
         myTokenId: null,
         consultationDurations: [10, 8, 12, 9, 11, 7, 13],
-        notifications: [
-          { id: crypto.randomUUID(), text: "Welcome to Upriter — your queue is live.", type: "info", time: Date.now() - 60000 },
-        ],
-        travelTimeMins: 22,
-
-        addPatient: ({ name, age, phone, isWalkIn, appointmentTime }) => {
-          const token = get().nextTokenNumber;
-          const p: Patient = {
-            id: crypto.randomUUID(),
-            token,
-            name,
-            age,
-            phone,
-            status: "waiting",
-            createdAt: Date.now(),
-            isWalkIn,
-            appointmentTime,
-          };
-          set((s) => ({ patients: [...s.patients, p], nextTokenNumber: s.nextTokenNumber + 1 }));
-          get().pushNotification({ text: `Token #${token} issued for ${name}`, type: "success" });
-          return p;
-        },
-
-        callNext: () => {
-          const s = get();
-          // end any in-progress
-          let patients = s.patients.map((p) => {
-            if (p.status === "in_progress") {
-              const startedAt = p.startedAt ?? Date.now() - 8 * 60000;
-              const durationMin = Math.max(3, Math.round((Date.now() - startedAt) / 60000));
-              return { ...p, status: "completed" as TokenStatus, endedAt: Date.now() };
-            }
-            return p;
-          });
-          const completed = s.patients.find((p) => p.status === "in_progress");
-          let durations = s.consultationDurations;
-          if (completed && completed.startedAt) {
-            const d = Math.max(3, Math.round((Date.now() - completed.startedAt) / 60000));
-            durations = [...durations, d].slice(-30);
-          }
-          // next waiting
-          const next = [...patients]
-            .filter((p) => p.status === "waiting")
-            .sort((a, b) => a.token - b.token)[0];
-          if (next) {
-            patients = patients.map((p) =>
-              p.id === next.id ? { ...p, status: "in_progress", startedAt: Date.now() } : p
-            );
-            set({ patients, currentToken: next.token, consultationDurations: durations });
-            get().pushNotification({ text: `Now serving token #${next.token} — ${next.name}`, type: "info" });
-          } else {
-            set({ patients, consultationDurations: durations });
-          }
-        },
-
-        skipCurrent: () => {
-          const s = get();
-          const patients = s.patients.map((p) =>
-            p.status === "in_progress" ? { ...p, status: "skipped" as TokenStatus } : p
-          );
-          set({ patients });
-          get().pushNotification({ text: "Token skipped — will be recalled later.", type: "warning" });
-          get().callNext();
-        },
-
-        markNoShow: () => {
-          const s = get();
-          const patients = s.patients.map((p) =>
-            p.status === "in_progress" ? { ...p, status: "no_show" as TokenStatus } : p
-          );
-          set({ patients });
-          get().pushNotification({ text: "Marked as No-Show.", type: "warning" });
-          get().callNext();
-        },
-
-        startConsultation: () => {
-          set((s) => ({
-            patients: s.patients.map((p) =>
-              p.status === "in_progress" && !p.startedAt ? { ...p, startedAt: Date.now() } : p
-            ),
-          }));
-        },
-
-        endConsultation: () => {
-          get().callNext();
-        },
-
-        setDoctorStatus: (status, delayMins = 0) => {
-          set((s) => ({
-            doctors: s.doctors.map((d) =>
-              d.id === s.activeDoctorId ? { ...d, status, delayMins } : d
-            ),
-          }));
-          const label =
-            status === "late" ? `Doctor running late (+${delayMins} mins)` :
-            status === "break" ? "Doctor on a short break" :
-            "Doctor available — queue resumed";
-          get().pushNotification({ text: label, type: status === "available" ? "success" : "warning" });
-        },
-
-        bookAppointment: ({ name, age, phone, appointmentTime }) => {
-          const p = get().addPatient({ name, age, phone, appointmentTime });
-          set({ myTokenId: p.id });
-          return p;
-        },
-
-        pushNotification: (n) => {
-          set((s) => ({
-            notifications: [
-              { ...n, id: crypto.randomUUID(), time: Date.now() },
-              ...s.notifications,
-            ].slice(0, 30),
-          }));
-        },
-
-        clearMyToken: () => set({ myTokenId: null }),
-
-        reset: () => {
-          const s = buildSeedPatients();
-          set({
-            patients: s.patients,
-            currentToken: s.currentToken,
-            nextTokenNumber: s.nextTokenNumber,
-            myTokenId: null,
-            consultationDurations: [10, 8, 12, 9, 11, 7, 13],
-            notifications: [],
-            doctors: seedDoctors,
-          });
-        },
-      }),
-      {
-        name: "upriter-store-v1",
-        // only persist in browser
-        storage: typeof window !== "undefined"
-          ? undefined
-          : { getItem: () => null, setItem: () => {}, removeItem: () => {} } as any,
-      }
-    )
-  )
+        notifications: [],
+        doctors: seedDoctors,
+      });
+    },
+  }))
 );
 
 // Cross-tab sync via BroadcastChannel
