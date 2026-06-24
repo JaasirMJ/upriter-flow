@@ -165,11 +165,12 @@ function AuthPage() {
               />
             </div>
             <div>
-              <Label className="text-xs">{mode === "forgot" ? "New password" : "Password"}</Label>
+              <Label className="text-xs">Password</Label>
               <div className="relative mt-1.5">
                 <Lock className="size-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <Input value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="••••••••" className="pl-9" autoComplete={mode === "login" ? "current-password" : "new-password"} />
               </div>
+
             </div>
             {mode === "signup" && (
               <div>
