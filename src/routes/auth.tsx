@@ -101,12 +101,11 @@ function AuthPage() {
             ))}
           </div>
         </div>
-        <div className="relative z-10 text-xs text-muted-foreground">
-          <p className="mb-1">Demo accounts:</p>
-          <code className="text-[10px]">doctor@upriter.health / doctor</code><br />
-          <code className="text-[10px]">reception@upriter.health / reception</code><br />
-          <code className="text-[10px]">admin@upriter.health / admin</code>
+        <div className="relative z-10 text-xs text-muted-foreground max-w-sm">
+          <p className="font-medium text-foreground/80 mb-1">Demo build</p>
+          <p>Sign up to create an account in each portal. No real patient data should be entered — this is a frontend-only demo without a secure backend.</p>
         </div>
+
       </div>
 
       {/* Form side */}
