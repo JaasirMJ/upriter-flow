@@ -16,7 +16,9 @@ const NAV = [
 export function AppShell({ children, title, subtitle }: { children: ReactNode; title: string; subtitle?: string }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [dark, setDark] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const reset = useStore((s) => s.reset);
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     const saved = localStorage.getItem("upriter-theme");
