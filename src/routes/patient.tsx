@@ -17,6 +17,7 @@ import { PatientHistoryTimeline } from "@/components/PatientHistoryTimeline";
 import { EmergencyCard } from "@/components/EmergencyCard";
 import { HealthSummary } from "@/components/HealthSummary";
 import { NearbyHospitals } from "@/components/NearbyHospitals";
+import { NextVisitCard } from "@/components/NextVisitCard";
 import type { Priority } from "@/lib/store";
 import type { RiskAssessment } from "@/lib/risk";
 
