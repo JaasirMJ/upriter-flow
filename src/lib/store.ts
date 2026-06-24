@@ -54,6 +54,22 @@ export interface Notification {
   time: number;
 }
 
+export interface AuditEntry {
+  id: string;
+  time: number;
+  action: string;
+  detail?: string;
+  actor?: string;
+}
+
+interface Snapshot {
+  patients: Patient[];
+  currentToken: number;
+  nextTokenNumber: number;
+  consultationDurations: number[];
+  label: string;
+}
+
 interface State {
   hospitals: Hospital[];
   doctors: Doctor[];
@@ -62,16 +78,19 @@ interface State {
   currentToken: number;
   nextTokenNumber: number;
   myTokenId: string | null;
-  consultationDurations: number[]; // minutes
+  consultationDurations: number[];
   notifications: Notification[];
   lastReadNotifAt: number;
   travelTimeMins: number;
   now: number;
   liveSimulation: boolean;
+  auditLog: AuditEntry[];
+  lockedTokens: number[];
+  lastUpdatedAt: number;
+  undoStack: Snapshot[];
   tick: () => void;
   toggleLiveSimulation: () => void;
 
-  // actions
   addPatient: (
     p: { name: string; age: number; phone: string; isWalkIn?: boolean; appointmentTime?: string; priority?: Priority; symptoms?: string; aiLabel?: string; riskLevel?: RiskLevel; riskLabels?: string[]; suggestedDept?: string; recommendation?: string; confidence?: number; estDurationMins?: number; reviewStatus?: ReviewStatus }
   ) => Patient;
@@ -87,6 +106,10 @@ interface State {
   setPatientPriority: (id: string, priority: Priority) => void;
   setReviewStatus: (id: string, status: ReviewStatus) => void;
   clearMyToken: () => void;
+  undoLast: () => boolean;
+  pushAudit: (action: string, detail?: string) => void;
+  lockToken: (token: number) => boolean;
+  unlockToken: (token: number) => void;
   reset: () => void;
 }
 
@@ -171,6 +194,51 @@ export const useStore = create<State>()(
     lastReadNotifAt: Date.now(),
     now: Date.now(),
     liveSimulation: true,
+    auditLog: [
+      { id: "seed-audit", time: Date.now() - 60000, action: "System started", detail: "Queue initialized", actor: "system" },
+    ],
+    lockedTokens: [],
+    lastUpdatedAt: Date.now(),
+    undoStack: [],
+
+    pushAudit: (action, detail) => {
+      set((s) => ({
+        auditLog: [
+          { id: (typeof crypto !== "undefined" ? crypto.randomUUID() : String(Math.random())), time: Date.now(), action, detail, actor: "reception" },
+          ...s.auditLog,
+        ].slice(0, 200),
+        lastUpdatedAt: Date.now(),
+      }));
+    },
+
+    lockToken: (token) => {
+      const s = get();
+      if (s.lockedTokens.includes(token)) return false;
+      set({ lockedTokens: [...s.lockedTokens, token] });
+      return true;
+    },
+
+    unlockToken: (token) => {
+      set((s) => ({ lockedTokens: s.lockedTokens.filter((t) => t !== token) }));
+    },
+
+    undoLast: () => {
+      const s = get();
+      const snap = s.undoStack[0];
+      if (!snap) return false;
+      set({
+        patients: snap.patients,
+        currentToken: snap.currentToken,
+        nextTokenNumber: snap.nextTokenNumber,
+        consultationDurations: snap.consultationDurations,
+        undoStack: s.undoStack.slice(1),
+        lastUpdatedAt: Date.now(),
+      });
+      get().pushAudit("Undo", snap.label);
+      get().pushNotification({ text: `Undone: ${snap.label}`, type: "info" });
+      return true;
+    },
+
 
     tick: () => {
       const s = get();
@@ -216,6 +284,13 @@ export const useStore = create<State>()(
 
     callNext: () => {
       const s = get();
+      const snapshot: Snapshot = {
+        patients: s.patients,
+        currentToken: s.currentToken,
+        nextTokenNumber: s.nextTokenNumber,
+        consultationDurations: s.consultationDurations,
+        label: "Call next",
+      };
       let patients = s.patients.map((p) =>
         p.status === "in_progress" ? { ...p, status: "completed" as TokenStatus, endedAt: Date.now() } : p
       );
@@ -228,28 +303,54 @@ export const useStore = create<State>()(
       const next = [...patients].filter((p) => p.status === "waiting").sort((a, b) => a.token - b.token)[0];
       if (next) {
         patients = patients.map((p) => p.id === next.id ? { ...p, status: "in_progress", startedAt: Date.now() } : p);
-        set({ patients, currentToken: next.token, consultationDurations: durations });
+        set({ patients, currentToken: next.token, consultationDurations: durations, lastUpdatedAt: Date.now(), undoStack: [snapshot, ...s.undoStack].slice(0, 10) });
         get().pushNotification({ text: `Now serving token #${next.token} — ${next.name}`, type: "info" });
+        get().pushAudit("Call next", `Token #${next.token} — ${next.name}`);
       } else {
-        set({ patients, consultationDurations: durations });
+        set({ patients, consultationDurations: durations, lastUpdatedAt: Date.now() });
       }
     },
 
     skipCurrent: () => {
-      set((s) => ({
+      const s = get();
+      const current = s.patients.find((p) => p.status === "in_progress");
+      const snapshot: Snapshot = {
+        patients: s.patients,
+        currentToken: s.currentToken,
+        nextTokenNumber: s.nextTokenNumber,
+        consultationDurations: s.consultationDurations,
+        label: current ? `Skip token #${current.token}` : "Skip",
+      };
+      set({
         patients: s.patients.map((p) => p.status === "in_progress" ? { ...p, status: "skipped" as TokenStatus } : p),
-      }));
+        undoStack: [snapshot, ...s.undoStack].slice(0, 10),
+        lastUpdatedAt: Date.now(),
+      });
       get().pushNotification({ text: "Token skipped — will be recalled later.", type: "warning" });
+      get().pushAudit("Skip", current ? `Token #${current.token} — ${current.name}` : undefined);
       get().callNext();
     },
 
     markNoShow: () => {
-      set((s) => ({
+      const s = get();
+      const current = s.patients.find((p) => p.status === "in_progress");
+      const snapshot: Snapshot = {
+        patients: s.patients,
+        currentToken: s.currentToken,
+        nextTokenNumber: s.nextTokenNumber,
+        consultationDurations: s.consultationDurations,
+        label: current ? `No-show token #${current.token}` : "No-show",
+      };
+      set({
         patients: s.patients.map((p) => p.status === "in_progress" ? { ...p, status: "no_show" as TokenStatus } : p),
-      }));
+        undoStack: [snapshot, ...s.undoStack].slice(0, 10),
+        lastUpdatedAt: Date.now(),
+      });
       get().pushNotification({ text: "Marked as No-Show.", type: "warning" });
+      get().pushAudit("No-show", current ? `Token #${current.token} — ${current.name}` : undefined);
       get().callNext();
     },
+
 
     startConsultation: () => {
       set((s) => ({
@@ -316,6 +417,10 @@ export const useStore = create<State>()(
         consultationDurations: [10, 8, 12, 9, 11, 7, 13],
         notifications: [],
         doctors: seedDoctors,
+        auditLog: [{ id: "seed-audit", time: Date.now(), action: "Demo reset", actor: "system" }],
+        lockedTokens: [],
+        undoStack: [],
+        lastUpdatedAt: Date.now(),
       });
     },
   }))
@@ -333,7 +438,7 @@ if (typeof window !== "undefined") {
     };
     useStore.subscribe((state) => {
       if (suppress) return;
-      const { addPatient, callNext, skipCurrent, markNoShow, startConsultation, endConsultation, setDoctorStatus, bookAppointment, pushNotification, clearMyToken, reset, tick, toggleLiveSimulation, now, ...data } = state as any;
+      const { addPatient, callNext, skipCurrent, markNoShow, startConsultation, endConsultation, setDoctorStatus, bookAppointment, pushNotification, clearMyToken, reset, tick, toggleLiveSimulation, undoLast, pushAudit, lockToken, unlockToken, setPatientPriority, setReviewStatus, markNotificationsRead, now, ...data } = state as any;
       bc.postMessage(data);
     });
   } catch {}
