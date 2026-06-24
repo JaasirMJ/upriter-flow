@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
+import type { RiskLevel, ReviewStatus } from "@/lib/risk";
 
 export type TokenStatus = "waiting" | "in_progress" | "completed" | "skipped" | "no_show";
 export type DoctorStatus = "available" | "late" | "break";
@@ -20,6 +21,14 @@ export interface Patient {
   priority?: Priority;
   symptoms?: string;
   aiLabel?: string;
+  // AI Risk Assessment (recommendation only)
+  riskLevel?: RiskLevel;
+  riskLabels?: string[];
+  suggestedDept?: string;
+  recommendation?: string;
+  confidence?: number;
+  estDurationMins?: number;
+  reviewStatus?: ReviewStatus;
 }
 
 export interface Doctor {
