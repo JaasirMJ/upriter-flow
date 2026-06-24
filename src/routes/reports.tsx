@@ -57,7 +57,7 @@ function ReportsPage() {
   const filtered = filter === "all" ? reports : reports.filter((r) => r.category === filter);
 
   return (
-    <AppShell title="Medical Reports" subtitle="Encrypted on-device. Only you and doctors you book with can access them.">
+    <AppShell title="Medical Reports" subtitle="Demo build — files are stored unencrypted in this browser's local storage and are not shared with any server.">
       <div className="space-y-5">
         <Card
           className="p-6 border-dashed border-2 text-center cursor-pointer hover:bg-accent/30 transition"
