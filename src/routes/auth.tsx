@@ -22,7 +22,7 @@ const PORTALS: { role: Role; label: string; icon: any; hint: string; tone: strin
 function AuthPage() {
   const router = useRouter();
   const [role, setRole] = useState<Role>("patient");
-  const [mode, setMode] = useState<"login" | "signup" | "forgot">("login");
+  const [mode, setMode] = useState<"login" | "signup">("login");
   const [method, setMethod] = useState<"email" | "phone">("email");
 
   const [identifier, setIdentifier] = useState("");
@@ -30,44 +30,43 @@ function AuthPage() {
   const [confirmPw, setConfirmPw] = useState("");
   const [name, setName] = useState("");
   const [remember, setRemember] = useState(true);
+  const [busy, setBusy] = useState(false);
 
   const login = useAuth((s) => s.login);
   const signup = useAuth((s) => s.signup);
-  const forgotPassword = useAuth((s) => s.forgotPassword);
 
   const portal = PORTALS.find((p) => p.role === role)!;
   const Icon = portal.icon;
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!identifier || (mode !== "forgot" && !password)) return toast.error("Fill all fields");
-    if (mode === "login") {
-      const r = login(role, identifier, password, remember);
-      if (!r.ok) return toast.error(r.error ?? "Login failed");
-      toast.success(`Welcome back`);
-      router.navigate({ to: homeFor(role) });
-    } else if (mode === "signup") {
-      if (password.length < 4) return toast.error("Password must be at least 4 characters");
-      if (password !== confirmPw) return toast.error("Passwords don't match");
-      if (!name.trim()) return toast.error("Enter your name");
-      const r = signup({
-        role, name: name.trim(), password,
-        email: method === "email" ? identifier.trim() : undefined,
-        phone: method === "phone" ? identifier.trim() : undefined,
-      });
-      if (!r.ok) return toast.error(r.error ?? "Signup failed");
-      toast.success(`Account created`);
-      // Patients still need to complete onboarding (location, age, etc.)
-      router.navigate({ to: role === "patient" ? "/onboarding" : homeFor(role) });
-    } else {
-      if (!password || password.length < 4) return toast.error("New password must be at least 4 characters");
-      const r = forgotPassword(role, identifier, password);
-      if (!r.ok) return toast.error(r.error ?? "Reset failed");
-      toast.success("Password reset — please sign in");
-      setMode("login");
-      setPassword("");
+    if (!identifier || !password) return toast.error("Fill all fields");
+    setBusy(true);
+    try {
+      if (mode === "login") {
+        const r = await login(role, identifier, password, remember);
+        if (!r.ok) return toast.error(r.error ?? "Login failed");
+        toast.success(`Welcome back`);
+        router.navigate({ to: homeFor(role) });
+      } else {
+        if (password.length < 8) return toast.error("Password must be at least 8 characters");
+        if (password !== confirmPw) return toast.error("Passwords don't match");
+        if (!name.trim()) return toast.error("Enter your name");
+        const r = await signup({
+          role, name: name.trim(), password,
+          email: method === "email" ? identifier.trim() : undefined,
+          phone: method === "phone" ? identifier.trim() : undefined,
+        });
+        if (!r.ok) return toast.error(r.error ?? "Signup failed");
+        toast.success(`Account created`);
+        // Patients still need to complete onboarding (location, age, etc.)
+        router.navigate({ to: role === "patient" ? "/onboarding" : homeFor(role) });
+      }
+    } finally {
+      setBusy(false);
     }
   };
+
 
   return (
     <div className="min-h-screen flex bg-background">
@@ -102,12 +101,11 @@ function AuthPage() {
             ))}
           </div>
         </div>
-        <div className="relative z-10 text-xs text-muted-foreground">
-          <p className="mb-1">Demo accounts:</p>
-          <code className="text-[10px]">doctor@upriter.health / doctor</code><br />
-          <code className="text-[10px]">reception@upriter.health / reception</code><br />
-          <code className="text-[10px]">admin@upriter.health / admin</code>
+        <div className="relative z-10 text-xs text-muted-foreground max-w-sm">
+          <p className="font-medium text-foreground/80 mb-1">Demo build</p>
+          <p>Sign up to create an account in each portal. No real patient data should be entered — this is a frontend-only demo without a secure backend.</p>
         </div>
+
       </div>
 
       {/* Form side */}
@@ -133,8 +131,9 @@ function AuthPage() {
             </div>
             <div>
               <h2 className="text-2xl font-semibold tracking-tight">{portal.label} portal</h2>
-              <p className="text-sm text-muted-foreground">{mode === "login" ? "Sign in to your account" : mode === "signup" ? "Create your account" : "Reset your password"}</p>
+              <p className="text-sm text-muted-foreground">{mode === "login" ? "Sign in to your account" : "Create your account"}</p>
             </div>
+
           </div>
 
           {/* Method toggle */}
@@ -166,11 +165,12 @@ function AuthPage() {
               />
             </div>
             <div>
-              <Label className="text-xs">{mode === "forgot" ? "New password" : "Password"}</Label>
+              <Label className="text-xs">Password</Label>
               <div className="relative mt-1.5">
                 <Lock className="size-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <Input value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="••••••••" className="pl-9" autoComplete={mode === "login" ? "current-password" : "new-password"} />
               </div>
+
             </div>
             {mode === "signup" && (
               <div>
@@ -185,26 +185,25 @@ function AuthPage() {
                   <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} className="rounded" />
                   Remember me
                 </label>
-                <button type="button" onClick={() => setMode("forgot")} className="text-primary hover:underline">Forgot password?</button>
               </div>
             )}
 
-            <Button type="submit" className="w-full gap-2 h-10 mt-2">
-              {mode === "login" ? "Sign in" : mode === "signup" ? "Create account" : "Reset password"} <ArrowRight className="size-4" />
+            <Button type="submit" disabled={busy} className="w-full gap-2 h-10 mt-2">
+              {busy ? "Please wait…" : mode === "login" ? "Sign in" : "Create account"} <ArrowRight className="size-4" />
             </Button>
           </form>
 
           <div className="mt-6 text-center text-sm text-muted-foreground">
-            {mode === "login" && (
+            {mode === "login" ? (
               <>Don't have an account? <button onClick={() => setMode("signup")} className="text-primary hover:underline">Sign up</button></>
-            )}
-            {mode === "signup" && (
+            ) : (
               <>Already have an account? <button onClick={() => setMode("login")} className="text-primary hover:underline">Sign in</button></>
             )}
-            {mode === "forgot" && (
-              <button onClick={() => setMode("login")} className="text-primary hover:underline">Back to sign in</button>
-            )}
           </div>
+          <p className="mt-3 text-[10px] text-center text-muted-foreground">
+            Forgot your password? Account recovery requires a backend identity provider, which isn't enabled in this demo build.
+          </p>
+
 
           <p className="mt-8 text-[10px] text-center text-muted-foreground">
             By continuing you agree to our <Link to="/terms" className="underline">terms</Link> and <Link to="/privacy" className="underline">privacy policy</Link>.
