@@ -118,8 +118,15 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
+      <ToasterMount />
     </QueryClientProvider>
   );
+}
+
+function ToasterMount() {
+  // dynamic to avoid SSR issues
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { Toaster } = require("sonner");
+  return <Toaster position="top-right" richColors closeButton />;
 }
