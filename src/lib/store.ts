@@ -230,10 +230,17 @@ export const useStore = create<State>()(
       get().pushNotification({ text: label, type: status === "available" ? "success" : "warning" });
     },
 
-    bookAppointment: ({ name, age, phone, appointmentTime }) => {
-      const p = get().addPatient({ name, age, phone, appointmentTime });
+    bookAppointment: ({ name, age, phone, appointmentTime, priority, symptoms, aiLabel }) => {
+      const p = get().addPatient({ name, age, phone, appointmentTime, priority, symptoms, aiLabel });
       set({ myTokenId: p.id });
       return p;
+    },
+
+    markNotificationsRead: () => set({ lastReadNotifAt: Date.now() }),
+
+    setPatientPriority: (id, priority) => {
+      set((s) => ({ patients: s.patients.map((p) => p.id === id ? { ...p, priority } : p) }));
+      get().pushNotification({ text: `Priority updated to ${priority.toUpperCase()}`, type: priority === "critical" || priority === "high" ? "warning" : "info" });
     },
 
     pushNotification: (n) => {
