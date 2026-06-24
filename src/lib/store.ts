@@ -333,10 +333,15 @@ if (typeof window !== "undefined") {
     };
     useStore.subscribe((state) => {
       if (suppress) return;
-      const { addPatient, callNext, skipCurrent, markNoShow, startConsultation, endConsultation, setDoctorStatus, bookAppointment, pushNotification, clearMyToken, reset, ...data } = state as any;
+      const { addPatient, callNext, skipCurrent, markNoShow, startConsultation, endConsultation, setDoctorStatus, bookAppointment, pushNotification, clearMyToken, reset, tick, toggleLiveSimulation, now, ...data } = state as any;
       bc.postMessage(data);
     });
   } catch {}
+
+  // Live heartbeat — drives "now"-dependent UI and auto-progresses simulated queue
+  setInterval(() => {
+    try { useStore.getState().tick(); } catch {}
+  }, 4000);
 }
 
 // ---- selectors ----
