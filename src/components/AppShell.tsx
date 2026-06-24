@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Activity, LayoutDashboard, User, Stethoscope, ClipboardList, BarChart3, Moon, Sun, RotateCcw, Search, Settings, Command, MapPin } from "lucide-react";
+import { Activity, LayoutDashboard, User, Stethoscope, ClipboardList, BarChart3, Moon, Sun, RotateCcw, Search, Settings, Command, MapPin, Building2, CalendarPlus, HeartPulse, FileText, History, ShieldCheck } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { useStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
@@ -9,10 +9,18 @@ import { CommandPalette } from "@/components/CommandPalette";
 import { NotificationCenter } from "@/components/NotificationCenter";
 import { ProfileMenu } from "@/components/ProfileMenu";
 
-const NAV = [
+const NAV_MAIN = [
   { to: "/", label: "Home", icon: LayoutDashboard },
   { to: "/journey", label: "Smart Journey", icon: MapPin },
   { to: "/patient", label: "Patient", icon: User },
+  { to: "/book", label: "Book", icon: CalendarPlus },
+  { to: "/hospitals", label: "Hospitals", icon: Building2 },
+  { to: "/first-aid", label: "First Aid", icon: HeartPulse },
+  { to: "/reports", label: "Reports", icon: FileText },
+  { to: "/history", label: "History", icon: History },
+] as const;
+
+const NAV_STAFF = [
   { to: "/doctor", label: "Doctor", icon: Stethoscope },
   { to: "/reception", label: "Reception", icon: ClipboardList },
   { to: "/admin", label: "Admin", icon: BarChart3 },
