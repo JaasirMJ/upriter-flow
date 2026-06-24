@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { StatusBadge } from "@/routes/doctor";
 import { PriorityBadge } from "@/components/PriorityIntake";
 import { HospitalLiveStatus } from "@/components/HospitalLiveStatus";
+import { ReceptionEmergencyPanel } from "@/components/ReceptionEmergencyPanel";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
