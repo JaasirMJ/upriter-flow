@@ -165,7 +165,7 @@ function BookFlow() {
 
       {step === 3 && (
         <div className="mt-6 space-y-3">
-          <PriorityIntake onAccept={(r) => { setPriority(r.priority); setAiLabel(r.label); setSymptoms(r.symptoms); setStep(4); }} />
+          <PriorityIntake age={age ? Number(age) : undefined} onAccept={(r) => { setPriority(r.priority); setAssessment(r.assessment); setSymptoms(r.symptoms); setStep(4); }} />
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setStep(2)}>Back</Button>
             <Button variant="ghost" onClick={() => setStep(4)} className="flex-1">Skip for now</Button>
@@ -175,13 +175,14 @@ function BookFlow() {
 
       {step === 4 && (
         <div className="mt-6 space-y-4">
-          {aiLabel && (
-            <div className="p-3 rounded-lg bg-accent/40 border border-border flex items-center justify-between">
+          {assessment && (
+            <div className="p-3 rounded-lg bg-accent/40 border border-border flex items-center justify-between gap-2 flex-wrap">
               <div>
-                <div className="text-xs text-muted-foreground">AI triage</div>
-                <div className="text-sm font-medium">{aiLabel}</div>
+                <div className="text-xs text-muted-foreground">AI risk assessment</div>
+                <div className="text-sm font-medium">{assessment.recommendation}</div>
+                <div className="text-[11px] text-muted-foreground mt-0.5">Suggested: {assessment.suggestedDept} · {assessment.confidence}% confidence</div>
               </div>
-              <PriorityBadge priority={priority} />
+              <RiskBadge level={assessment.riskLevel} />
             </div>
           )}
           <div className="grid sm:grid-cols-2 gap-3">
