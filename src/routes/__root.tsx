@@ -8,6 +8,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { Toaster } from "sonner";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -119,14 +120,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
-      <ToasterMount />
+      <Toaster position="top-right" richColors closeButton />
     </QueryClientProvider>
   );
-}
-
-function ToasterMount() {
-  // dynamic to avoid SSR issues
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { Toaster } = require("sonner");
-  return <Toaster position="top-right" richColors closeButton />;
 }
