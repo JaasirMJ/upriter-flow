@@ -9,17 +9,43 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as SecurityRouteImport } from './routes/security'
+import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as ReceptionRouteImport } from './routes/reception'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PatientRouteImport } from './routes/patient'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as JourneyRouteImport } from './routes/journey'
+import { Route as HospitalsRouteImport } from './routes/hospitals'
+import { Route as HistoryRouteImport } from './routes/history'
+import { Route as FirstAidRouteImport } from './routes/first-aid'
 import { Route as DoctorRouteImport } from './routes/doctor'
+import { Route as BookRouteImport } from './routes/book'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as HospitalsHospitalIdRouteImport } from './routes/hospitals.$hospitalId'
+import { Route as DoctorsDoctorIdRouteImport } from './routes/doctors.$doctorId'
 
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SecurityRoute = SecurityRouteImport.update({
+  id: '/security',
+  path: '/security',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReportsRoute = ReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReceptionRoute = ReceptionRouteImport.update({
@@ -27,9 +53,19 @@ const ReceptionRoute = ReceptionRouteImport.update({
   path: '/reception',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PatientRoute = PatientRouteImport.update({
   id: '/patient',
   path: '/patient',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
 const JourneyRoute = JourneyRouteImport.update({
@@ -37,9 +73,29 @@ const JourneyRoute = JourneyRouteImport.update({
   path: '/journey',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HospitalsRoute = HospitalsRouteImport.update({
+  id: '/hospitals',
+  path: '/hospitals',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HistoryRoute = HistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FirstAidRoute = FirstAidRouteImport.update({
+  id: '/first-aid',
+  path: '/first-aid',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DoctorRoute = DoctorRouteImport.update({
   id: '/doctor',
   path: '/doctor',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BookRoute = BookRouteImport.update({
+  id: '/book',
+  path: '/book',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -52,82 +108,189 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HospitalsHospitalIdRoute = HospitalsHospitalIdRouteImport.update({
+  id: '/$hospitalId',
+  path: '/$hospitalId',
+  getParentRoute: () => HospitalsRoute,
+} as any)
+const DoctorsDoctorIdRoute = DoctorsDoctorIdRouteImport.update({
+  id: '/doctors/$doctorId',
+  path: '/doctors/$doctorId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/book': typeof BookRoute
   '/doctor': typeof DoctorRoute
+  '/first-aid': typeof FirstAidRoute
+  '/history': typeof HistoryRoute
+  '/hospitals': typeof HospitalsRouteWithChildren
   '/journey': typeof JourneyRoute
+  '/onboarding': typeof OnboardingRoute
   '/patient': typeof PatientRoute
+  '/privacy': typeof PrivacyRoute
   '/reception': typeof ReceptionRoute
+  '/reports': typeof ReportsRoute
+  '/security': typeof SecurityRoute
   '/settings': typeof SettingsRoute
+  '/terms': typeof TermsRoute
+  '/doctors/$doctorId': typeof DoctorsDoctorIdRoute
+  '/hospitals/$hospitalId': typeof HospitalsHospitalIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/book': typeof BookRoute
   '/doctor': typeof DoctorRoute
+  '/first-aid': typeof FirstAidRoute
+  '/history': typeof HistoryRoute
+  '/hospitals': typeof HospitalsRouteWithChildren
   '/journey': typeof JourneyRoute
+  '/onboarding': typeof OnboardingRoute
   '/patient': typeof PatientRoute
+  '/privacy': typeof PrivacyRoute
   '/reception': typeof ReceptionRoute
+  '/reports': typeof ReportsRoute
+  '/security': typeof SecurityRoute
   '/settings': typeof SettingsRoute
+  '/terms': typeof TermsRoute
+  '/doctors/$doctorId': typeof DoctorsDoctorIdRoute
+  '/hospitals/$hospitalId': typeof HospitalsHospitalIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/book': typeof BookRoute
   '/doctor': typeof DoctorRoute
+  '/first-aid': typeof FirstAidRoute
+  '/history': typeof HistoryRoute
+  '/hospitals': typeof HospitalsRouteWithChildren
   '/journey': typeof JourneyRoute
+  '/onboarding': typeof OnboardingRoute
   '/patient': typeof PatientRoute
+  '/privacy': typeof PrivacyRoute
   '/reception': typeof ReceptionRoute
+  '/reports': typeof ReportsRoute
+  '/security': typeof SecurityRoute
   '/settings': typeof SettingsRoute
+  '/terms': typeof TermsRoute
+  '/doctors/$doctorId': typeof DoctorsDoctorIdRoute
+  '/hospitals/$hospitalId': typeof HospitalsHospitalIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/admin'
+    | '/book'
     | '/doctor'
+    | '/first-aid'
+    | '/history'
+    | '/hospitals'
     | '/journey'
+    | '/onboarding'
     | '/patient'
+    | '/privacy'
     | '/reception'
+    | '/reports'
+    | '/security'
     | '/settings'
+    | '/terms'
+    | '/doctors/$doctorId'
+    | '/hospitals/$hospitalId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/admin'
+    | '/book'
     | '/doctor'
+    | '/first-aid'
+    | '/history'
+    | '/hospitals'
     | '/journey'
+    | '/onboarding'
     | '/patient'
+    | '/privacy'
     | '/reception'
+    | '/reports'
+    | '/security'
     | '/settings'
+    | '/terms'
+    | '/doctors/$doctorId'
+    | '/hospitals/$hospitalId'
   id:
     | '__root__'
     | '/'
     | '/admin'
+    | '/book'
     | '/doctor'
+    | '/first-aid'
+    | '/history'
+    | '/hospitals'
     | '/journey'
+    | '/onboarding'
     | '/patient'
+    | '/privacy'
     | '/reception'
+    | '/reports'
+    | '/security'
     | '/settings'
+    | '/terms'
+    | '/doctors/$doctorId'
+    | '/hospitals/$hospitalId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  BookRoute: typeof BookRoute
   DoctorRoute: typeof DoctorRoute
+  FirstAidRoute: typeof FirstAidRoute
+  HistoryRoute: typeof HistoryRoute
+  HospitalsRoute: typeof HospitalsRouteWithChildren
   JourneyRoute: typeof JourneyRoute
+  OnboardingRoute: typeof OnboardingRoute
   PatientRoute: typeof PatientRoute
+  PrivacyRoute: typeof PrivacyRoute
   ReceptionRoute: typeof ReceptionRoute
+  ReportsRoute: typeof ReportsRoute
+  SecurityRoute: typeof SecurityRoute
   SettingsRoute: typeof SettingsRoute
+  TermsRoute: typeof TermsRoute
+  DoctorsDoctorIdRoute: typeof DoctorsDoctorIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/settings': {
       id: '/settings'
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/security': {
+      id: '/security'
+      path: '/security'
+      fullPath: '/security'
+      preLoaderRoute: typeof SecurityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reports': {
+      id: '/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof ReportsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reception': {
@@ -137,11 +300,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReceptionRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/patient': {
       id: '/patient'
       path: '/patient'
       fullPath: '/patient'
       preLoaderRoute: typeof PatientRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/journey': {
@@ -151,11 +328,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof JourneyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/hospitals': {
+      id: '/hospitals'
+      path: '/hospitals'
+      fullPath: '/hospitals'
+      preLoaderRoute: typeof HospitalsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/history': {
+      id: '/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof HistoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/first-aid': {
+      id: '/first-aid'
+      path: '/first-aid'
+      fullPath: '/first-aid'
+      preLoaderRoute: typeof FirstAidRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/doctor': {
       id: '/doctor'
       path: '/doctor'
       fullPath: '/doctor'
       preLoaderRoute: typeof DoctorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/book': {
+      id: '/book'
+      path: '/book'
+      fullPath: '/book'
+      preLoaderRoute: typeof BookRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -172,17 +377,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/hospitals/$hospitalId': {
+      id: '/hospitals/$hospitalId'
+      path: '/$hospitalId'
+      fullPath: '/hospitals/$hospitalId'
+      preLoaderRoute: typeof HospitalsHospitalIdRouteImport
+      parentRoute: typeof HospitalsRoute
+    }
+    '/doctors/$doctorId': {
+      id: '/doctors/$doctorId'
+      path: '/doctors/$doctorId'
+      fullPath: '/doctors/$doctorId'
+      preLoaderRoute: typeof DoctorsDoctorIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
+
+interface HospitalsRouteChildren {
+  HospitalsHospitalIdRoute: typeof HospitalsHospitalIdRoute
+}
+
+const HospitalsRouteChildren: HospitalsRouteChildren = {
+  HospitalsHospitalIdRoute: HospitalsHospitalIdRoute,
+}
+
+const HospitalsRouteWithChildren = HospitalsRoute._addFileChildren(
+  HospitalsRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  BookRoute: BookRoute,
   DoctorRoute: DoctorRoute,
+  FirstAidRoute: FirstAidRoute,
+  HistoryRoute: HistoryRoute,
+  HospitalsRoute: HospitalsRouteWithChildren,
   JourneyRoute: JourneyRoute,
+  OnboardingRoute: OnboardingRoute,
   PatientRoute: PatientRoute,
+  PrivacyRoute: PrivacyRoute,
   ReceptionRoute: ReceptionRoute,
+  ReportsRoute: ReportsRoute,
+  SecurityRoute: SecurityRoute,
   SettingsRoute: SettingsRoute,
+  TermsRoute: TermsRoute,
+  DoctorsDoctorIdRoute: DoctorsDoctorIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
