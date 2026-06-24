@@ -12,9 +12,11 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { JourneyPlanner } from "@/components/JourneyPlanner";
 import { BookingSlots } from "@/components/BookingSlots";
-import { PriorityIntake, PriorityBadge } from "@/components/PriorityIntake";
+import { PriorityIntake, PriorityBadge, RiskBadge } from "@/components/PriorityIntake";
 import { PatientHistoryTimeline } from "@/components/PatientHistoryTimeline";
+import { EmergencyCard } from "@/components/EmergencyCard";
 import type { Priority } from "@/lib/store";
+import type { RiskAssessment } from "@/lib/risk";
 
 export const Route = createFileRoute("/patient")({
   head: () => ({
