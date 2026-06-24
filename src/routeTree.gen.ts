@@ -22,6 +22,7 @@ import { Route as HospitalsRouteImport } from './routes/hospitals'
 import { Route as HistoryRouteImport } from './routes/history'
 import { Route as FirstAidRouteImport } from './routes/first-aid'
 import { Route as DoctorRouteImport } from './routes/doctor'
+import { Route as DisplayRouteImport } from './routes/display'
 import { Route as BookRouteImport } from './routes/book'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
@@ -93,6 +94,11 @@ const DoctorRoute = DoctorRouteImport.update({
   path: '/doctor',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DisplayRoute = DisplayRouteImport.update({
+  id: '/display',
+  path: '/display',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BookRoute = BookRouteImport.update({
   id: '/book',
   path: '/book',
@@ -123,6 +129,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/book': typeof BookRoute
+  '/display': typeof DisplayRoute
   '/doctor': typeof DoctorRoute
   '/first-aid': typeof FirstAidRoute
   '/history': typeof HistoryRoute
@@ -143,6 +150,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/book': typeof BookRoute
+  '/display': typeof DisplayRoute
   '/doctor': typeof DoctorRoute
   '/first-aid': typeof FirstAidRoute
   '/history': typeof HistoryRoute
@@ -164,6 +172,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/book': typeof BookRoute
+  '/display': typeof DisplayRoute
   '/doctor': typeof DoctorRoute
   '/first-aid': typeof FirstAidRoute
   '/history': typeof HistoryRoute
@@ -186,6 +195,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/book'
+    | '/display'
     | '/doctor'
     | '/first-aid'
     | '/history'
@@ -206,6 +216,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/book'
+    | '/display'
     | '/doctor'
     | '/first-aid'
     | '/history'
@@ -226,6 +237,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/book'
+    | '/display'
     | '/doctor'
     | '/first-aid'
     | '/history'
@@ -247,6 +259,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
   BookRoute: typeof BookRoute
+  DisplayRoute: typeof DisplayRoute
   DoctorRoute: typeof DoctorRoute
   FirstAidRoute: typeof FirstAidRoute
   HistoryRoute: typeof HistoryRoute
@@ -356,6 +369,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DoctorRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/display': {
+      id: '/display'
+      path: '/display'
+      fullPath: '/display'
+      preLoaderRoute: typeof DisplayRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/book': {
       id: '/book'
       path: '/book'
@@ -410,6 +430,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   BookRoute: BookRoute,
+  DisplayRoute: DisplayRoute,
   DoctorRoute: DoctorRoute,
   FirstAidRoute: FirstAidRoute,
   HistoryRoute: HistoryRoute,
