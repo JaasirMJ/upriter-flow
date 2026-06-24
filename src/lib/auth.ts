@@ -1,5 +1,8 @@
 // Local demo auth. Accounts persist in localStorage; no backend.
-// Suitable for the demo — passwords are stored plaintext intentionally for replay.
+// Passwords are stored as PBKDF2-SHA256 hashes with a per-account random salt —
+// the plaintext is never written to storage. Note: because the entire auth
+// runs in the browser, this is suitable for a demo only and provides no
+// protection against a user who edits their own browser storage.
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -10,7 +13,10 @@ export interface Account {
   role: Role;
   email?: string;
   phone?: string;
-  password: string;
+  /** PBKDF2-SHA256 hash, base64. */
+  passwordHash: string;
+  /** Random salt, base64. */
+  passwordSalt: string;
   name: string;
   photoDataUrl?: string;
   address?: string;
@@ -25,15 +31,50 @@ interface AuthState {
   accounts: Account[];
   currentId: string | null;
   remember: boolean;
-  login: (role: Role, identifier: string, password: string, remember?: boolean) => { ok: boolean; error?: string };
-  signup: (data: Omit<Account, "id" | "createdAt">) => { ok: boolean; error?: string; account?: Account };
+  login: (role: Role, identifier: string, password: string, remember?: boolean) => Promise<{ ok: boolean; error?: string }>;
+  signup: (data: Omit<Account, "id" | "createdAt" | "passwordHash" | "passwordSalt"> & { password: string }) => Promise<{ ok: boolean; error?: string; account?: Account }>;
   logout: () => void;
-  forgotPassword: (role: Role, identifier: string, newPassword: string) => { ok: boolean; error?: string };
-  updateCurrent: (patch: Partial<Omit<Account, "id" | "role" | "createdAt">>) => void;
+  updateCurrent: (patch: Partial<Omit<Account, "id" | "role" | "createdAt" | "passwordHash" | "passwordSalt">>) => void;
 }
 
 function uid() {
   return typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : String(Math.random());
+}
+
+function bytesToB64(b: Uint8Array): string {
+  let s = "";
+  for (let i = 0; i < b.length; i++) s += String.fromCharCode(b[i]);
+  return btoa(s);
+}
+function b64ToBytes(s: string): Uint8Array {
+  const bin = atob(s);
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+
+async function derivePasswordHash(password: string, saltB64?: string): Promise<{ hash: string; salt: string }> {
+  const saltBytes = saltB64 ? b64ToBytes(saltB64) : crypto.getRandomValues(new Uint8Array(16));
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(password),
+    "PBKDF2",
+    false,
+    ["deriveBits"],
+  );
+  const bits = await crypto.subtle.deriveBits(
+    { name: "PBKDF2", salt: saltBytes, iterations: 100_000, hash: "SHA-256" },
+    key,
+    256,
+  );
+  return { hash: bytesToB64(new Uint8Array(bits)), salt: bytesToB64(saltBytes) };
+}
+
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
 }
 
 function matches(a: Account, role: Role, id: string): boolean {
@@ -43,53 +84,54 @@ function matches(a: Account, role: Role, id: string): boolean {
   return a.email?.toLowerCase() === v || a.phone === id.trim();
 }
 
-// Seed staff accounts so judges can try every portal
-const seed: Account[] = [
-  { id: "demo-doc", role: "doctor", email: "doctor@upriter.health", password: "doctor", name: "Dr. Sameeha Rao", language: "English", createdAt: Date.now() - 86400000 },
-  { id: "demo-rec", role: "reception", email: "reception@upriter.health", password: "reception", name: "Priya Nair", language: "English", createdAt: Date.now() - 86400000 },
-  { id: "demo-adm", role: "admin", email: "admin@upriter.health", password: "admin", name: "Arjun Iyer", language: "English", createdAt: Date.now() - 86400000 },
-];
-
 export const useAuth = create<AuthState>()(
   persist(
     (set, get) => ({
-      accounts: seed,
+      // No seeded staff accounts — credentials must be created by signup.
+      accounts: [],
       currentId: null,
       remember: true,
 
-      login: (role, identifier, password, remember = true) => {
+      login: async (role, identifier, password, remember = true) => {
         const acc = get().accounts.find((a) => matches(a, role, identifier));
         if (!acc) return { ok: false, error: "No account found for that role." };
-        if (acc.password !== password) return { ok: false, error: "Incorrect password." };
+        if (!acc.passwordSalt || !acc.passwordHash) {
+          return { ok: false, error: "This account needs to be re-created." };
+        }
+        const { hash } = await derivePasswordHash(password, acc.passwordSalt);
+        if (!timingSafeEqual(hash, acc.passwordHash)) {
+          return { ok: false, error: "Incorrect password." };
+        }
         set({ currentId: acc.id, remember });
         return { ok: true };
       },
 
-      signup: (data) => {
+      signup: async (data) => {
         const { accounts } = get();
         const v = (data.email ?? data.phone ?? "").trim().toLowerCase();
         if (!v) return { ok: false, error: "Email or phone is required." };
+        if (!data.password || data.password.length < 8) {
+          return { ok: false, error: "Password must be at least 8 characters." };
+        }
         const dup = accounts.find((a) => a.role === data.role && (
           (data.email && a.email?.toLowerCase() === data.email.toLowerCase()) ||
           (data.phone && a.phone === data.phone)
         ));
         if (dup) return { ok: false, error: "An account with this email/phone already exists for this role." };
-        const account: Account = { ...data, id: uid(), createdAt: Date.now() };
+        const { hash, salt } = await derivePasswordHash(data.password);
+        const { password: _drop, ...rest } = data;
+        const account: Account = {
+          ...rest,
+          id: uid(),
+          createdAt: Date.now(),
+          passwordHash: hash,
+          passwordSalt: salt,
+        };
         set({ accounts: [...accounts, account], currentId: account.id });
         return { ok: true, account };
       },
 
       logout: () => set({ currentId: null }),
-
-      forgotPassword: (role, identifier, newPassword) => {
-        const { accounts } = get();
-        const i = accounts.findIndex((a) => matches(a, role, identifier));
-        if (i < 0) return { ok: false, error: "No account found." };
-        const next = [...accounts];
-        next[i] = { ...next[i], password: newPassword };
-        set({ accounts: next });
-        return { ok: true };
-      },
 
       updateCurrent: (patch) => {
         const { accounts, currentId } = get();
