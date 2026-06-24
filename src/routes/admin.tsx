@@ -5,6 +5,8 @@ import { Card } from "@/components/ui/card";
 import { Stat } from "@/components/Stat";
 import { Activity, Clock, Stethoscope, Timer, Users } from "lucide-react";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { HospitalLiveStatus } from "@/components/HospitalLiveStatus";
+import { RushHourHeatmap } from "@/components/RushHourHeatmap";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Hospital Admin — Upriter" }] }),
