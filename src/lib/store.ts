@@ -54,6 +54,22 @@ export interface Notification {
   time: number;
 }
 
+export interface AuditEntry {
+  id: string;
+  time: number;
+  action: string;
+  detail?: string;
+  actor?: string;
+}
+
+interface Snapshot {
+  patients: Patient[];
+  currentToken: number;
+  nextTokenNumber: number;
+  consultationDurations: number[];
+  label: string;
+}
+
 interface State {
   hospitals: Hospital[];
   doctors: Doctor[];
@@ -62,16 +78,19 @@ interface State {
   currentToken: number;
   nextTokenNumber: number;
   myTokenId: string | null;
-  consultationDurations: number[]; // minutes
+  consultationDurations: number[];
   notifications: Notification[];
   lastReadNotifAt: number;
   travelTimeMins: number;
   now: number;
   liveSimulation: boolean;
+  auditLog: AuditEntry[];
+  lockedTokens: number[];
+  lastUpdatedAt: number;
+  undoStack: Snapshot[];
   tick: () => void;
   toggleLiveSimulation: () => void;
 
-  // actions
   addPatient: (
     p: { name: string; age: number; phone: string; isWalkIn?: boolean; appointmentTime?: string; priority?: Priority; symptoms?: string; aiLabel?: string; riskLevel?: RiskLevel; riskLabels?: string[]; suggestedDept?: string; recommendation?: string; confidence?: number; estDurationMins?: number; reviewStatus?: ReviewStatus }
   ) => Patient;
@@ -87,6 +106,10 @@ interface State {
   setPatientPriority: (id: string, priority: Priority) => void;
   setReviewStatus: (id: string, status: ReviewStatus) => void;
   clearMyToken: () => void;
+  undoLast: () => boolean;
+  pushAudit: (action: string, detail?: string) => void;
+  lockToken: (token: number) => boolean;
+  unlockToken: (token: number) => void;
   reset: () => void;
 }
 
