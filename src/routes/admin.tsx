@@ -52,14 +52,20 @@ function AdminPage() {
 
   return (
     <AppShell title="Hospital Admin" subtitle="Operational analytics across departments and doctors.">
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Stat icon={Users} label="Patients served today" value={completed} tone="success" />
-        <Stat icon={Timer} label="Avg consultation" value={`${Math.round(avg)} min`} tone="primary" />
-        <Stat icon={Clock} label="Avg waiting" value={`${avgWait} min`} />
-        <Stat icon={Stethoscope} label="Active doctors" value={`${activeDoctors}/${state.doctors.length}`} tone="primary" />
-      </div>
+      <div className="space-y-5">
+        <HospitalLiveStatus />
 
-      <div className="grid lg:grid-cols-3 gap-5 mt-5">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Stat icon={Users} label="Patients served today" value={completed} tone="success" />
+          <Stat icon={Timer} label="Avg consultation" value={`${Math.round(avg)} min`} tone="primary" />
+          <Stat icon={Clock} label="Avg waiting" value={`${avgWait} min`} />
+          <Stat icon={Stethoscope} label="Active doctors" value={`${activeDoctors}/${state.doctors.length}`} tone="primary" />
+        </div>
+
+        <RushHourHeatmap />
+
+      <div className="grid lg:grid-cols-3 gap-5">
+
         <Card className="p-5 lg:col-span-2">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold tracking-tight">Patients per day</h3>
