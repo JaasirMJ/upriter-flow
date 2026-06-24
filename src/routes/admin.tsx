@@ -119,6 +119,7 @@ function AdminPage() {
             </ResponsiveContainer>
           </div>
         </Card>
+        </div>
       </div>
     </AppShell>
   );
