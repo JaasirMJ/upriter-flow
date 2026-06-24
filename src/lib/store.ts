@@ -194,6 +194,51 @@ export const useStore = create<State>()(
     lastReadNotifAt: Date.now(),
     now: Date.now(),
     liveSimulation: true,
+    auditLog: [
+      { id: "seed-audit", time: Date.now() - 60000, action: "System started", detail: "Queue initialized", actor: "system" },
+    ],
+    lockedTokens: [],
+    lastUpdatedAt: Date.now(),
+    undoStack: [],
+
+    pushAudit: (action, detail) => {
+      set((s) => ({
+        auditLog: [
+          { id: (typeof crypto !== "undefined" ? crypto.randomUUID() : String(Math.random())), time: Date.now(), action, detail, actor: "reception" },
+          ...s.auditLog,
+        ].slice(0, 200),
+        lastUpdatedAt: Date.now(),
+      }));
+    },
+
+    lockToken: (token) => {
+      const s = get();
+      if (s.lockedTokens.includes(token)) return false;
+      set({ lockedTokens: [...s.lockedTokens, token] });
+      return true;
+    },
+
+    unlockToken: (token) => {
+      set((s) => ({ lockedTokens: s.lockedTokens.filter((t) => t !== token) }));
+    },
+
+    undoLast: () => {
+      const s = get();
+      const snap = s.undoStack[0];
+      if (!snap) return false;
+      set({
+        patients: snap.patients,
+        currentToken: snap.currentToken,
+        nextTokenNumber: snap.nextTokenNumber,
+        consultationDurations: snap.consultationDurations,
+        undoStack: s.undoStack.slice(1),
+        lastUpdatedAt: Date.now(),
+      });
+      get().pushAudit("Undo", snap.label);
+      get().pushNotification({ text: `Undone: ${snap.label}`, type: "info" });
+      return true;
+    },
+
 
     tick: () => {
       const s = get();
