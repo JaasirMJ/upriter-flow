@@ -131,8 +131,9 @@ function AuthPage() {
             </div>
             <div>
               <h2 className="text-2xl font-semibold tracking-tight">{portal.label} portal</h2>
-              <p className="text-sm text-muted-foreground">{mode === "login" ? "Sign in to your account" : mode === "signup" ? "Create your account" : "Reset your password"}</p>
+              <p className="text-sm text-muted-foreground">{mode === "login" ? "Sign in to your account" : "Create your account"}</p>
             </div>
+
           </div>
 
           {/* Method toggle */}
