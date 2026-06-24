@@ -176,9 +176,14 @@ export function AppShell({ children, title, subtitle }: { children: ReactNode; t
           })}
         </div>
 
-        <div className="px-6 md:px-10 pt-7 pb-5 border-b border-border">
-          <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">{title}</h1>
-          {subtitle && <p className="text-muted-foreground mt-1 text-sm md:text-base">{subtitle}</p>}
+        <div className="px-6 md:px-10 pt-7 pb-5 border-b border-border flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">{title}</h1>
+            {subtitle && <p className="text-muted-foreground mt-1 text-sm md:text-base">{subtitle}</p>}
+          </div>
+          <div className="hidden sm:flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-muted-foreground bg-muted/60 border border-border rounded-full px-2.5 py-1 shrink-0">
+            <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" /> Live
+          </div>
         </div>
         <div className="p-4 md:p-8 flex-1">{mounted ? children : null}</div>
 
