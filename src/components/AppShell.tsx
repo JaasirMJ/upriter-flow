@@ -158,7 +158,7 @@ export function AppShell({ children, title, subtitle }: { children: ReactNode; t
 
         {/* Mobile nav */}
         <div className="md:hidden flex gap-1 px-3 py-2 overflow-x-auto border-b border-border bg-sidebar">
-          {NAV.map(({ to, label, icon: Icon }) => {
+          {[...NAV_MAIN, ...NAV_STAFF].map(({ to, label, icon: Icon }: { to: string; label: string; icon: any }) => {
             const active = pathname === to;
             return (
               <Link
