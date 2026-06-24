@@ -22,7 +22,7 @@ const PORTALS: { role: Role; label: string; icon: any; hint: string; tone: strin
 function AuthPage() {
   const router = useRouter();
   const [role, setRole] = useState<Role>("patient");
-  const [mode, setMode] = useState<"login" | "signup" | "forgot">("login");
+  const [mode, setMode] = useState<"login" | "signup">("login");
   const [method, setMethod] = useState<"email" | "phone">("email");
 
   const [identifier, setIdentifier] = useState("");
@@ -30,44 +30,43 @@ function AuthPage() {
   const [confirmPw, setConfirmPw] = useState("");
   const [name, setName] = useState("");
   const [remember, setRemember] = useState(true);
+  const [busy, setBusy] = useState(false);
 
   const login = useAuth((s) => s.login);
   const signup = useAuth((s) => s.signup);
-  const forgotPassword = useAuth((s) => s.forgotPassword);
 
   const portal = PORTALS.find((p) => p.role === role)!;
   const Icon = portal.icon;
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!identifier || (mode !== "forgot" && !password)) return toast.error("Fill all fields");
-    if (mode === "login") {
-      const r = login(role, identifier, password, remember);
-      if (!r.ok) return toast.error(r.error ?? "Login failed");
-      toast.success(`Welcome back`);
-      router.navigate({ to: homeFor(role) });
-    } else if (mode === "signup") {
-      if (password.length < 4) return toast.error("Password must be at least 4 characters");
-      if (password !== confirmPw) return toast.error("Passwords don't match");
-      if (!name.trim()) return toast.error("Enter your name");
-      const r = signup({
-        role, name: name.trim(), password,
-        email: method === "email" ? identifier.trim() : undefined,
-        phone: method === "phone" ? identifier.trim() : undefined,
-      });
-      if (!r.ok) return toast.error(r.error ?? "Signup failed");
-      toast.success(`Account created`);
-      // Patients still need to complete onboarding (location, age, etc.)
-      router.navigate({ to: role === "patient" ? "/onboarding" : homeFor(role) });
-    } else {
-      if (!password || password.length < 4) return toast.error("New password must be at least 4 characters");
-      const r = forgotPassword(role, identifier, password);
-      if (!r.ok) return toast.error(r.error ?? "Reset failed");
-      toast.success("Password reset — please sign in");
-      setMode("login");
-      setPassword("");
+    if (!identifier || !password) return toast.error("Fill all fields");
+    setBusy(true);
+    try {
+      if (mode === "login") {
+        const r = await login(role, identifier, password, remember);
+        if (!r.ok) return toast.error(r.error ?? "Login failed");
+        toast.success(`Welcome back`);
+        router.navigate({ to: homeFor(role) });
+      } else {
+        if (password.length < 8) return toast.error("Password must be at least 8 characters");
+        if (password !== confirmPw) return toast.error("Passwords don't match");
+        if (!name.trim()) return toast.error("Enter your name");
+        const r = await signup({
+          role, name: name.trim(), password,
+          email: method === "email" ? identifier.trim() : undefined,
+          phone: method === "phone" ? identifier.trim() : undefined,
+        });
+        if (!r.ok) return toast.error(r.error ?? "Signup failed");
+        toast.success(`Account created`);
+        // Patients still need to complete onboarding (location, age, etc.)
+        router.navigate({ to: role === "patient" ? "/onboarding" : homeFor(role) });
+      }
+    } finally {
+      setBusy(false);
     }
   };
+
 
   return (
     <div className="min-h-screen flex bg-background">
