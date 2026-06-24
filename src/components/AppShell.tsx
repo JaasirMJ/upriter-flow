@@ -73,9 +73,30 @@ export function AppShell({ children, title, subtitle }: { children: ReactNode; t
           <kbd className="text-[10px] px-1.5 py-0.5 rounded bg-muted border border-border">⌘K</kbd>
         </button>
 
-        <div className="text-[10px] uppercase tracking-wider text-muted-foreground/70 px-3 pb-1">Workspace</div>
+        <div className="text-[10px] uppercase tracking-wider text-muted-foreground/70 px-3 pb-1">Patient</div>
         <nav className="flex flex-col gap-0.5">
-          {NAV.map(({ to, label, icon: Icon }) => {
+          {NAV_MAIN.map(({ to, label, icon: Icon }: { to: string; label: string; icon: any }) => {
+            const active = pathname === to;
+            return (
+              <Link
+                key={to}
+                to={to}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all",
+                  active
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-soft"
+                    : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+                )}
+              >
+                <Icon className="size-4" />
+                {label}
+              </Link>
+            );
+          })}
+        </nav>
+        <div className="text-[10px] uppercase tracking-wider text-muted-foreground/70 px-3 pt-3 pb-1">Staff</div>
+        <nav className="flex flex-col gap-0.5">
+          {NAV_STAFF.map(({ to, label, icon: Icon }: { to: string; label: string; icon: any }) => {
             const active = pathname === to;
             return (
               <Link
