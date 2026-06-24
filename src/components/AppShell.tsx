@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Activity, LayoutDashboard, User, Stethoscope, ClipboardList, BarChart3, Moon, Sun, RotateCcw, Search, Settings, Command } from "lucide-react";
+import { Activity, LayoutDashboard, User, Stethoscope, ClipboardList, BarChart3, Moon, Sun, RotateCcw, Search, Settings, Command, MapPin } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { useStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { ProfileMenu } from "@/components/ProfileMenu";
 
 const NAV = [
   { to: "/", label: "Home", icon: LayoutDashboard },
+  { to: "/journey", label: "Smart Journey", icon: MapPin },
   { to: "/patient", label: "Patient", icon: User },
   { to: "/doctor", label: "Doctor", icon: Stethoscope },
   { to: "/reception", label: "Reception", icon: ClipboardList },
