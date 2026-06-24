@@ -55,11 +55,12 @@ interface State {
   myTokenId: string | null;
   consultationDurations: number[]; // minutes
   notifications: Notification[];
+  lastReadNotifAt: number;
   travelTimeMins: number;
 
   // actions
   addPatient: (
-    p: { name: string; age: number; phone: string; isWalkIn?: boolean; appointmentTime?: string }
+    p: { name: string; age: number; phone: string; isWalkIn?: boolean; appointmentTime?: string; priority?: Priority; symptoms?: string; aiLabel?: string }
   ) => Patient;
   callNext: () => void;
   skipCurrent: () => void;
@@ -67,8 +68,10 @@ interface State {
   startConsultation: () => void;
   endConsultation: () => void;
   setDoctorStatus: (status: DoctorStatus, delayMins?: number) => void;
-  bookAppointment: (data: { name: string; age: number; phone: string; appointmentTime: string }) => Patient;
+  bookAppointment: (data: { name: string; age: number; phone: string; appointmentTime: string; priority?: Priority; symptoms?: string; aiLabel?: string }) => Patient;
   pushNotification: (n: Omit<Notification, "id" | "time">) => void;
+  markNotificationsRead: () => void;
+  setPatientPriority: (id: string, priority: Priority) => void;
   clearMyToken: () => void;
   reset: () => void;
 }
