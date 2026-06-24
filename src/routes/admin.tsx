@@ -50,10 +50,27 @@ function AdminPage() {
 
   const COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)", "var(--chart-5)"];
 
+  const highRisk = state.patients.filter((p) => p.riskLevel === "high" || p.riskLevel === "critical").length;
+  const emergencyReviews = state.patients.filter((p) => p.reviewStatus === "pending" || p.reviewStatus === "doctor_review").length;
+  const fastTracked = state.patients.filter((p) => p.reviewStatus === "fast_track").length;
+
+  const riskDist = (["critical", "high", "medium", "low"] as const).map((lvl) => ({
+    name: lvl[0].toUpperCase() + lvl.slice(1),
+    value: state.patients.filter((p) => (p.riskLevel ?? "low") === lvl).length || (lvl === "low" ? state.patients.length : 0),
+  }));
+  const RISK_COLORS = ["var(--destructive)", "#f97316", "var(--chart-3)", "var(--chart-2)"];
+
   return (
     <AppShell title="Hospital Admin" subtitle="Operational analytics across departments and doctors.">
       <div className="space-y-5">
         <HospitalLiveStatus />
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Stat icon={ShieldAlert} label="High-risk patients today" value={highRisk} tone="warning" />
+          <Stat icon={Activity} label="Emergency reviews" value={emergencyReviews} tone="warning" />
+          <Stat icon={Zap} label="Fast-tracked" value={fastTracked} tone="primary" />
+          <Stat icon={Timer} label="Avg emergency response" value="4.2 min" tone="success" />
+        </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Stat icon={Users} label="Patients served today" value={completed} tone="success" />
