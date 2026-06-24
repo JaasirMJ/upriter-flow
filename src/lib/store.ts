@@ -69,7 +69,7 @@ interface State {
 
   // actions
   addPatient: (
-    p: { name: string; age: number; phone: string; isWalkIn?: boolean; appointmentTime?: string; priority?: Priority; symptoms?: string; aiLabel?: string }
+    p: { name: string; age: number; phone: string; isWalkIn?: boolean; appointmentTime?: string; priority?: Priority; symptoms?: string; aiLabel?: string; riskLevel?: RiskLevel; riskLabels?: string[]; suggestedDept?: string; recommendation?: string; confidence?: number; estDurationMins?: number; reviewStatus?: ReviewStatus }
   ) => Patient;
   callNext: () => void;
   skipCurrent: () => void;
@@ -77,10 +77,11 @@ interface State {
   startConsultation: () => void;
   endConsultation: () => void;
   setDoctorStatus: (status: DoctorStatus, delayMins?: number) => void;
-  bookAppointment: (data: { name: string; age: number; phone: string; appointmentTime: string; priority?: Priority; symptoms?: string; aiLabel?: string }) => Patient;
+  bookAppointment: (data: { name: string; age: number; phone: string; appointmentTime: string; priority?: Priority; symptoms?: string; aiLabel?: string; riskLevel?: RiskLevel; riskLabels?: string[]; suggestedDept?: string; recommendation?: string; confidence?: number; estDurationMins?: number }) => Patient;
   pushNotification: (n: Omit<Notification, "id" | "time">) => void;
   markNotificationsRead: () => void;
   setPatientPriority: (id: string, priority: Priority) => void;
+  setReviewStatus: (id: string, status: ReviewStatus) => void;
   clearMyToken: () => void;
   reset: () => void;
 }
