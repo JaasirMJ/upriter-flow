@@ -54,6 +54,7 @@ function ReceptionPage() {
     <AppShell title="Reception Dashboard" subtitle="Add patients, manage the queue, handle walk-ins.">
       <div className="space-y-5">
         <HospitalLiveStatus />
+        <ReceptionEmergencyPanel />
 
         <div className="grid lg:grid-cols-3 gap-5">
           <Card className="p-5 lg:col-span-1">
