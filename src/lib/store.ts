@@ -438,7 +438,7 @@ if (typeof window !== "undefined") {
     };
     useStore.subscribe((state) => {
       if (suppress) return;
-      const { addPatient, callNext, skipCurrent, markNoShow, startConsultation, endConsultation, setDoctorStatus, bookAppointment, pushNotification, clearMyToken, reset, tick, toggleLiveSimulation, now, ...data } = state as any;
+      const { addPatient, callNext, skipCurrent, markNoShow, startConsultation, endConsultation, setDoctorStatus, bookAppointment, pushNotification, clearMyToken, reset, tick, toggleLiveSimulation, undoLast, pushAudit, lockToken, unlockToken, setPatientPriority, setReviewStatus, markNotificationsRead, now, ...data } = state as any;
       bc.postMessage(data);
     });
   } catch {}
