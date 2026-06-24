@@ -62,14 +62,23 @@ function BookFlow() {
   const [phone, setPhone] = useState("");
   const [priority, setPriority] = useState<Priority>("regular");
   const [symptoms, setSymptoms] = useState("");
-  const [aiLabel, setAiLabel] = useState<string | undefined>();
+  const [assessment, setAssessment] = useState<RiskAssessment | null>(null);
 
   const hospital = hospitals.find((h) => h.id === hospitalId)!;
 
   const book = () => {
     if (!name || !age || !phone) return toast.error("Fill in your details");
     const appt = new Date(`${date}T17:30:00`).toISOString();
-    const p = bookAppointment({ name, age: Number(age), phone, appointmentTime: appt, priority, symptoms, aiLabel });
+    const p = bookAppointment({
+      name, age: Number(age), phone, appointmentTime: appt, priority, symptoms,
+      aiLabel: assessment?.recommendation,
+      riskLevel: assessment?.riskLevel,
+      riskLabels: assessment?.labels,
+      suggestedDept: assessment?.suggestedDept,
+      recommendation: assessment?.recommendation,
+      confidence: assessment?.confidence,
+      estDurationMins: assessment?.estDurationMins,
+    });
     toast.success(`Booked! Your token is #${p.token}`);
   };
 
