@@ -122,7 +122,7 @@ function AdminPage() {
           </div>
         </Card>
 
-        <Card className="p-5 lg:col-span-3">
+        <Card className="p-5 lg:col-span-2">
           <h3 className="font-semibold tracking-tight">Doctor utilization</h3>
           <div className="mt-4 h-64">
             <ResponsiveContainer width="100%" height="100%">
@@ -133,6 +133,22 @@ function AdminPage() {
                 <Tooltip contentStyle={{ background: "var(--popover)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }} />
                 <Bar dataKey="util" fill="var(--chart-2)" radius={[8, 8, 0, 0]} />
               </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+
+        <Card className="p-5">
+          <h3 className="font-semibold tracking-tight">AI risk distribution</h3>
+          <p className="text-xs text-muted-foreground">Pending human review</p>
+          <div className="mt-4 h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={riskDist} dataKey="value" nameKey="name" innerRadius={45} outerRadius={80} paddingAngle={3}>
+                  {riskDist.map((_, i) => <Cell key={i} fill={RISK_COLORS[i]} />)}
+                </Pie>
+                <Tooltip contentStyle={{ background: "var(--popover)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }} />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+              </PieChart>
             </ResponsiveContainer>
           </div>
         </Card>
