@@ -154,8 +154,9 @@ export const useStore = create<State>()(
       { id: "seed-notif", text: "Welcome to Upriter — your queue is live.", type: "info", time: Date.now() - 60000 },
     ],
     travelTimeMins: 22,
+    lastReadNotifAt: Date.now(),
 
-    addPatient: ({ name, age, phone, isWalkIn, appointmentTime }) => {
+    addPatient: ({ name, age, phone, isWalkIn, appointmentTime, priority, symptoms, aiLabel }) => {
       const token = get().nextTokenNumber;
       const p: Patient = {
         id: (typeof crypto !== "undefined" ? crypto.randomUUID() : String(Math.random())),
@@ -163,6 +164,8 @@ export const useStore = create<State>()(
         status: "waiting",
         createdAt: Date.now(),
         isWalkIn, appointmentTime,
+        priority: priority ?? "regular",
+        symptoms, aiLabel,
       };
       set((s) => ({ patients: [...s.patients, p], nextTokenNumber: s.nextTokenNumber + 1 }));
       get().pushNotification({ text: `Token #${token} issued for ${name}`, type: "success" });
