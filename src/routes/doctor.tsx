@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Coffee, Pause, Play, Stethoscope, Timer, CheckCircle2, AlertCircle, Activity } from "lucide-react";
 import { Stat } from "@/components/Stat";
+import { DoctorPerformance } from "@/components/DoctorPerformance";
 import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/doctor")({
