@@ -3,6 +3,7 @@ import { subscribeWithSelector } from "zustand/middleware";
 
 export type TokenStatus = "waiting" | "in_progress" | "completed" | "skipped" | "no_show";
 export type DoctorStatus = "available" | "late" | "break";
+export type Priority = "critical" | "high" | "regular" | "routine";
 
 export interface Patient {
   id: string;
@@ -16,6 +17,9 @@ export interface Patient {
   endedAt?: number;
   appointmentTime?: string;
   isWalkIn?: boolean;
+  priority?: Priority;
+  symptoms?: string;
+  aiLabel?: string;
 }
 
 export interface Doctor {
@@ -51,11 +55,12 @@ interface State {
   myTokenId: string | null;
   consultationDurations: number[]; // minutes
   notifications: Notification[];
+  lastReadNotifAt: number;
   travelTimeMins: number;
 
   // actions
   addPatient: (
-    p: { name: string; age: number; phone: string; isWalkIn?: boolean; appointmentTime?: string }
+    p: { name: string; age: number; phone: string; isWalkIn?: boolean; appointmentTime?: string; priority?: Priority; symptoms?: string; aiLabel?: string }
   ) => Patient;
   callNext: () => void;
   skipCurrent: () => void;
@@ -63,8 +68,10 @@ interface State {
   startConsultation: () => void;
   endConsultation: () => void;
   setDoctorStatus: (status: DoctorStatus, delayMins?: number) => void;
-  bookAppointment: (data: { name: string; age: number; phone: string; appointmentTime: string }) => Patient;
+  bookAppointment: (data: { name: string; age: number; phone: string; appointmentTime: string; priority?: Priority; symptoms?: string; aiLabel?: string }) => Patient;
   pushNotification: (n: Omit<Notification, "id" | "time">) => void;
+  markNotificationsRead: () => void;
+  setPatientPriority: (id: string, priority: Priority) => void;
   clearMyToken: () => void;
   reset: () => void;
 }
@@ -147,8 +154,9 @@ export const useStore = create<State>()(
       { id: "seed-notif", text: "Welcome to Upriter — your queue is live.", type: "info", time: Date.now() - 60000 },
     ],
     travelTimeMins: 22,
+    lastReadNotifAt: Date.now(),
 
-    addPatient: ({ name, age, phone, isWalkIn, appointmentTime }) => {
+    addPatient: ({ name, age, phone, isWalkIn, appointmentTime, priority, symptoms, aiLabel }) => {
       const token = get().nextTokenNumber;
       const p: Patient = {
         id: (typeof crypto !== "undefined" ? crypto.randomUUID() : String(Math.random())),
@@ -156,6 +164,8 @@ export const useStore = create<State>()(
         status: "waiting",
         createdAt: Date.now(),
         isWalkIn, appointmentTime,
+        priority: priority ?? "regular",
+        symptoms, aiLabel,
       };
       set((s) => ({ patients: [...s.patients, p], nextTokenNumber: s.nextTokenNumber + 1 }));
       get().pushNotification({ text: `Token #${token} issued for ${name}`, type: "success" });
@@ -220,10 +230,17 @@ export const useStore = create<State>()(
       get().pushNotification({ text: label, type: status === "available" ? "success" : "warning" });
     },
 
-    bookAppointment: ({ name, age, phone, appointmentTime }) => {
-      const p = get().addPatient({ name, age, phone, appointmentTime });
+    bookAppointment: ({ name, age, phone, appointmentTime, priority, symptoms, aiLabel }) => {
+      const p = get().addPatient({ name, age, phone, appointmentTime, priority, symptoms, aiLabel });
       set({ myTokenId: p.id });
       return p;
+    },
+
+    markNotificationsRead: () => set({ lastReadNotifAt: Date.now() }),
+
+    setPatientPriority: (id, priority) => {
+      set((s) => ({ patients: s.patients.map((p) => p.id === id ? { ...p, priority } : p) }));
+      get().pushNotification({ text: `Priority updated to ${priority.toUpperCase()}`, type: priority === "critical" || priority === "high" ? "warning" : "info" });
     },
 
     pushNotification: (n) => {

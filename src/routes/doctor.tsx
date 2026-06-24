@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Coffee, Pause, Play, Stethoscope, Timer, CheckCircle2, AlertCircle, Activity } from "lucide-react";
 import { Stat } from "@/components/Stat";
+import { DoctorPerformance } from "@/components/DoctorPerformance";
 import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/doctor")({
@@ -38,6 +39,7 @@ function DoctorPage() {
       <div className="grid lg:grid-cols-3 gap-5 mt-5">
         <div className="lg:col-span-2 space-y-5">
           <ConsultationCard inProgress={inProgress} />
+          <DoctorPerformance />
           <ScheduleTable />
         </div>
         <div className="space-y-5">
