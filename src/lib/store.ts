@@ -284,6 +284,13 @@ export const useStore = create<State>()(
 
     callNext: () => {
       const s = get();
+      const snapshot: Snapshot = {
+        patients: s.patients,
+        currentToken: s.currentToken,
+        nextTokenNumber: s.nextTokenNumber,
+        consultationDurations: s.consultationDurations,
+        label: "Call next",
+      };
       let patients = s.patients.map((p) =>
         p.status === "in_progress" ? { ...p, status: "completed" as TokenStatus, endedAt: Date.now() } : p
       );
@@ -296,28 +303,54 @@ export const useStore = create<State>()(
       const next = [...patients].filter((p) => p.status === "waiting").sort((a, b) => a.token - b.token)[0];
       if (next) {
         patients = patients.map((p) => p.id === next.id ? { ...p, status: "in_progress", startedAt: Date.now() } : p);
-        set({ patients, currentToken: next.token, consultationDurations: durations });
+        set({ patients, currentToken: next.token, consultationDurations: durations, lastUpdatedAt: Date.now(), undoStack: [snapshot, ...s.undoStack].slice(0, 10) });
         get().pushNotification({ text: `Now serving token #${next.token} — ${next.name}`, type: "info" });
+        get().pushAudit("Call next", `Token #${next.token} — ${next.name}`);
       } else {
-        set({ patients, consultationDurations: durations });
+        set({ patients, consultationDurations: durations, lastUpdatedAt: Date.now() });
       }
     },
 
     skipCurrent: () => {
-      set((s) => ({
+      const s = get();
+      const current = s.patients.find((p) => p.status === "in_progress");
+      const snapshot: Snapshot = {
+        patients: s.patients,
+        currentToken: s.currentToken,
+        nextTokenNumber: s.nextTokenNumber,
+        consultationDurations: s.consultationDurations,
+        label: current ? `Skip token #${current.token}` : "Skip",
+      };
+      set({
         patients: s.patients.map((p) => p.status === "in_progress" ? { ...p, status: "skipped" as TokenStatus } : p),
-      }));
+        undoStack: [snapshot, ...s.undoStack].slice(0, 10),
+        lastUpdatedAt: Date.now(),
+      });
       get().pushNotification({ text: "Token skipped — will be recalled later.", type: "warning" });
+      get().pushAudit("Skip", current ? `Token #${current.token} — ${current.name}` : undefined);
       get().callNext();
     },
 
     markNoShow: () => {
-      set((s) => ({
+      const s = get();
+      const current = s.patients.find((p) => p.status === "in_progress");
+      const snapshot: Snapshot = {
+        patients: s.patients,
+        currentToken: s.currentToken,
+        nextTokenNumber: s.nextTokenNumber,
+        consultationDurations: s.consultationDurations,
+        label: current ? `No-show token #${current.token}` : "No-show",
+      };
+      set({
         patients: s.patients.map((p) => p.status === "in_progress" ? { ...p, status: "no_show" as TokenStatus } : p),
-      }));
+        undoStack: [snapshot, ...s.undoStack].slice(0, 10),
+        lastUpdatedAt: Date.now(),
+      });
       get().pushNotification({ text: "Marked as No-Show.", type: "warning" });
+      get().pushAudit("No-show", current ? `Token #${current.token} — ${current.name}` : undefined);
       get().callNext();
     },
+
 
     startConsultation: () => {
       set((s) => ({
